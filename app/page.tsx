@@ -55,6 +55,18 @@ const amenities = [
   { label: "ממ\"ד" },
 ];
 
+function BookingScore() {
+  const [score, setScore] = useState("10.0");
+  const [date, setDate] = useState("אפריל 2026");
+  useEffect(() => {
+    fetch("/api/booking-score")
+      .then((r) => r.json())
+      .then((d) => { setScore(d.score); setDate(d.date); })
+      .catch(() => {});
+  }, []);
+  return <span>ציון {score}/10 ב-Booking.com (נכון ל{date})</span>;
+}
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -676,14 +688,14 @@ export default function Home() {
         {/* Booking badge */}
         <div className="absolute top-6 left-6 md:left-12 z-10 flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 text-white/80 text-xs px-3.5 py-1.5 rounded-full">
           <span className="text-[#E2C47A]">★</span>
-          ציון 10/10 ב-Booking.com (נכון לאפריל 2026)
+          <BookingScore />
         </div>
       </section>
 
       {/* ── FACTS BAR ────────────────────────────────────── */}
       <section className="bg-[#0F1729] text-white/75 text-base tracking-wide py-5">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center gap-x-10 gap-y-2">
-          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה פרטית מחוממת", "10/10 Booking.com*"].map((t) => (
+          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה פרטית מחוממת"].map((t) => (
             <span key={t} className="flex items-center gap-2">
               <span className="w-1 h-1 rounded-full bg-[#C9A84C] inline-block" />
               {t}
@@ -861,7 +873,7 @@ export default function Home() {
                 {[
                   ["הרעות 18, אילת", "כתובת"],
                   ["8 דקות הליכה", "לחוף הים"],
-                  ["10 דקות נסיעה", "למרכז העיר"],
+                  ["10 דקות נסיעה", "לטיילת אילת"],
                   ["20 דקות נסיעה", "לנמל התעופה"],
                 ].map(([val, label]) => (
                   <div key={label} className="flex items-center gap-4 border-b border-gray-100 pb-4">
