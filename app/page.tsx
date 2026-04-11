@@ -676,20 +676,21 @@ export default function Home() {
         {/* Booking badge */}
         <div className="absolute top-6 left-6 md:left-12 z-10 flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 text-white/80 text-xs px-3.5 py-1.5 rounded-full">
           <span className="text-[#E2C47A]">★</span>
-          ציון 10/10 ב-Booking.com
+          ציון 10/10 ב-Booking.com (נכון לאפריל 2026)
         </div>
       </section>
 
       {/* ── FACTS BAR ────────────────────────────────────── */}
       <section className="bg-[#0F1729] text-white/75 text-base tracking-wide py-5">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center gap-x-10 gap-y-2">
-          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה פרטית מחוממת", "10/10 Booking.com"].map((t) => (
+          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה פרטית מחוממת", "10/10 Booking.com*"].map((t) => (
             <span key={t} className="flex items-center gap-2">
               <span className="w-1 h-1 rounded-full bg-[#C9A84C] inline-block" />
               {t}
             </span>
           ))}
         </div>
+        <p className="text-center text-white/25 text-xs mt-3">* נכון לאפריל 2026</p>
       </section>
 
       {/* ── ABOUT ────────────────────────────────────────── */}
@@ -799,7 +800,7 @@ export default function Home() {
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
                 בחרו תאריכים וראו מיד את המחיר בזמן אמת.
-                הזמנה ישירה — ללא עמלות Airbnb או Booking.
+                הזמנה ישירה — חסכו את דמי השירות של Airbnb ו-Booking.
               </p>
               <div className="space-y-4 text-base text-gray-500">
                 <div className="flex items-center gap-3">
@@ -914,8 +915,8 @@ export default function Home() {
             מוכנים לחופשה<br />שלא תשכחו?
           </h2>
           <p className="text-white/50 text-lg mb-10 leading-relaxed">
-            ללא עמלות. ללא מתווכים.<br />
-            מחיר טוב יותר מ-Airbnb ו-Booking.
+            הזמינו ישירות וחסכו את דמי השירות.<br />
+            ללא עמלות. ללא מתווכים.
           </p>
           <a
             href={WHATSAPP_URL}
