@@ -587,7 +587,7 @@ export default function Home() {
       {/* ── FACTS BAR ────────────────────────────────────── */}
       <section className="bg-[#0F1729] text-white/75 text-base tracking-wide py-5">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center gap-x-10 gap-y-2">
-          {["האושר 27, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה מחוממת פרטית", "10/10 Booking.com"].map((t) => (
+          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה מחוממת פרטית", "10/10 Booking.com"].map((t) => (
             <span key={t} className="flex items-center gap-2">
               <span className="w-1 h-1 rounded-full bg-[#C9A84C] inline-block" />
               {t}
@@ -757,12 +757,12 @@ export default function Home() {
                 לב אילת,<br />שקט ופרטיות
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
-                ברחוב האושר 27 — שכונה שקטה ומגודרת, מרחק נסיעה קצרה מהחוף,
+                ברחוב הרעות 18 — שכונה שקטה ומגודרת, מרחק נסיעה קצרה מהחוף,
                 מסעדות ומרכז העיר.
               </p>
               <div className="space-y-4 text-base text-gray-600">
                 {[
-                  ["האושר 27, אילת", "כתובת"],
+                  ["הרעות 18, אילת", "כתובת"],
                   ["5 דקות", "לחוף הים"],
                   ["10 דקות", "למרכז העיר"],
                   ["15 דקות", "לנמל התעופה"],
@@ -776,7 +776,7 @@ export default function Home() {
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
               <iframe
-                src="https://maps.google.com/maps?q=האושר+27,+אילת,+ישראל&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=הרעות+18,+אילת,+ישראל&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

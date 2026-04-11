@@ -7,7 +7,7 @@ Managed by הרים (Harim Eilat) — contact them for bookings.
 
 ## Property Details
 - **Name:** נוף הדקל / Villa Dekel
-- **Location:** האושר 27, אילת, ישראל
+- **Location:** הרעות 18, אילת, ישראל
 - **Managed by:** הרים (Harim Eilat) — harimeilat.com
 - **Bedrooms:** 5
 - **Bathrooms:** 3
