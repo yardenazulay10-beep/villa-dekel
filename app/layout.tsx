@@ -37,6 +37,7 @@ export default function RootLayout({
       lang="he"
       dir="rtl"
       className={`${heebo.variable} ${frankRuhl.variable}`}
+      suppressHydrationWarning
     >
       <body className="min-h-full antialiased">{children}</body>
     </html>
