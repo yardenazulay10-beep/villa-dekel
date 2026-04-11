@@ -955,6 +955,8 @@ export default function Home() {
           <a href="/cancellation" className="underline hover:text-white/50 transition-colors">מדיניות ביטול</a>
           {" · "}
           <a href="/accessibility" className="underline hover:text-white/50 transition-colors">הצהרת נגישות</a>
+          {" · "}
+          <a href="/terms" className="underline hover:text-white/50 transition-colors">תנאי שימוש</a>
         </p>
         <p>© 2026 נוף הדקל. כל הזכויות שמורות.</p>
       </footer>
