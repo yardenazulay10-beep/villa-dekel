@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 const LISTING_ID = process.env.AIRBNB_LISTING_ID!;
 const API_KEY = process.env.AIRBNB_API_KEY!;
 const HASH = process.env.AIRBNB_CALENDAR_HASH!;
@@ -75,8 +77,6 @@ async function fetchAirbnbMonths(month: number, year: number, count: number): Pr
   console.log(`[blocked-dates] ${blocked.length} blocked dates found`);
   return blocked;
 }
-
-export const revalidate = 1800;
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
