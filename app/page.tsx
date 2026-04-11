@@ -648,9 +648,6 @@ export default function Home() {
 
         {/* Hero text */}
         <div className="relative z-10 px-6 md:px-16 pb-16 md:pb-20">
-          <p className="label-gold-hero">
-            וילה פרטית · אילת · ים סוף
-          </p>
           <h1 className="font-display text-6xl md:text-8xl text-white font-light leading-[0.95] mb-6 tracking-tight">
             נוף<br />הדקל
           </h1>
