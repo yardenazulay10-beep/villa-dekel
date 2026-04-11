@@ -45,7 +45,7 @@ const amenities = [
   { label: "5 חדרי שינה" },
   { label: "3 חדרי אמבטיה" },
   { label: "נוף פנורמי לים סוף" },
-  { label: "נוף להרי אקבה" },
+  { label: "נוף להרי עקבה" },
   { label: "מיזוג אוויר מרכזי" },
   { label: "WiFi מהיר" },
   { label: "חניה חינם" },
@@ -559,7 +559,7 @@ export default function Home() {
           </h1>
           <p className="text-white/75 text-xl md:text-2xl font-light mb-10 max-w-md leading-relaxed">
             5 חדרי שינה · בריכה מחוממת פרטית<br />
-            נוף פנורמי לים סוף ולהרי אקבה
+            נוף פנורמי לים סוף ולהרי עקבה
           </p>
           <div className="flex flex-wrap gap-3">
             <a
@@ -605,7 +605,7 @@ export default function Home() {
               חופשה שלא<br />תרצו לעזוב
             </h2>
             <p className="text-gray-500 text-lg leading-[1.9] mb-5">
-              וילה נוף הדקל היא פינת גן עדן פרטית המשקיפה על ים סוף והרי אקבה.
+              וילה נוף הדקל היא פינת גן עדן פרטית המשקיפה על ים סוף והרי עקבה.
               הבריכה המחוממת הפרטית, מרחב המחיה המרווח ועיצוב פנים יוקרתי —
               הכל תוכנן לחופשה משפחתית שלא נשכחת.
             </p>
