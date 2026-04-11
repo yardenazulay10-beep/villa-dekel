@@ -776,7 +776,7 @@ export default function Home() {
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
               <iframe
-                src="https://maps.google.com/maps?q=הרעות+18,+אילת,+ישראל&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=רחוב+הרעות+18,+אילת&hl=he&z=16&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
