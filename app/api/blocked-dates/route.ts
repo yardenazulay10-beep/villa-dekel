@@ -17,18 +17,27 @@ async function fetchAirbnbMonths(month: number, year: number, count: number): Pr
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
       "X-Airbnb-API-Key": API_KEY,
       "Accept": "application/json",
+      "Accept-Language": "he-IL,he;q=0.9,en;q=0.8",
+      "Referer": `https://www.airbnb.com/rooms/${LISTING_ID}`,
+      "Origin": "https://www.airbnb.com",
     },
     signal: AbortSignal.timeout(12000),
+    cache: "no-store",
   });
 
-  if (!res.ok) return [];
+  if (!res.ok) {
+    console.error(`[blocked-dates] Airbnb returned ${res.status}`);
+    return [];
+  }
 
   const data = await res.json();
   const months: Array<{ days: Array<{ calendarDate: string; available: boolean; availableForCheckout: boolean }> }> =
     data?.data?.merlin?.pdpAvailabilityCalendar?.calendarMonths ?? [];
+
+  console.log(`[blocked-dates] Got ${months.length} months from Airbnb`);
 
   const blocked: string[] = [];
   for (const m of months) {
@@ -38,6 +47,8 @@ async function fetchAirbnbMonths(month: number, year: number, count: number): Pr
       }
     }
   }
+
+  console.log(`[blocked-dates] ${blocked.length} blocked dates found`);
   return blocked;
 }
 
@@ -52,8 +63,9 @@ export async function GET() {
   try {
     const blocked = await fetchAirbnbMonths(month, year, 4);
     const future = blocked.filter((d) => d >= todayISO);
-    return NextResponse.json({ blockedDates: future, source: "airbnb" });
-  } catch {
+    return NextResponse.json({ blockedDates: future, source: "airbnb", count: future.length });
+  } catch (e) {
+    console.error("[blocked-dates] Error:", e);
     return NextResponse.json({ blockedDates: [], source: "error" });
   }
 }
