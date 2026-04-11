@@ -775,7 +775,7 @@ export default function Home() {
                 {/* Navigation buttons */}
                 <div className="flex gap-3 pt-2">
                   <a
-                    href="https://waze.com/ul?q=הרעות+18+אילת&navigate=yes"
+                    href="https://waze.com/ul?ll=29.54208,34.94206&navigate=yes"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-[#05C8F7] hover:bg-[#00b5e0] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
@@ -784,7 +784,7 @@ export default function Home() {
                     נווט ב-Waze
                   </a>
                   <a
-                    href="https://maps.google.com/?q=הרעות+18+אילת"
+                    href="https://maps.app.goo.gl/jcnG4ioS8bDp9vPKA"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-white hover:bg-gray-50 text-[#0F1729] text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 transition-all"
@@ -797,7 +797,7 @@ export default function Home() {
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
               <iframe
-                src="https://maps.google.com/maps?q=רחוב+הרעות+18,+אילת&hl=he&z=16&output=embed"
+                src="https://maps.google.com/maps?q=29.54208,34.94206&hl=he&z=17&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
