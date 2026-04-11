@@ -706,13 +706,6 @@ export default function Home() {
               5 חדרי שינה מרווחים, 3 חדרי אמבטיה, מטבח מאובזר לחלוטין,
               פרגולה עם מטבח חוץ וגינה פנורמית — הכל תחת קורת גג אחת.
             </p>
-            <div className="inline-flex items-baseline gap-4 border-t border-[#E8D5B7] pt-6">
-              <span className="font-display text-5xl text-[#C9A84C] font-light">10</span>
-              <div>
-                <div className="text-[#0F1729] font-medium text-sm">ציון מושלם</div>
-                <div className="text-gray-400 text-xs mt-0.5">Booking.com</div>
-              </div>
-            </div>
           </div>
           <div className="order-1 md:order-2 relative h-[480px] md:h-[580px] rounded-2xl overflow-hidden">
             <Image src={aboutSrc} alt="סלון ופינת אוכל עם נוף לים סוף" fill className="object-cover" />
