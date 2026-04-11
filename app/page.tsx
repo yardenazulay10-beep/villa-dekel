@@ -757,7 +757,7 @@ export default function Home() {
                 לב אילת,<br />שקט ופרטיות
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
-                ברחוב הרעות 18 — שכונה שקטה ומגודרת, מרחק נסיעה קצרה מהחוף,
+                ברחוב הרעות 18 — שכונה שקטה, מרחק נסיעה קצרה מהחוף,
                 מסעדות ומרכז העיר.
               </p>
               <div className="space-y-4 text-base text-gray-600">
