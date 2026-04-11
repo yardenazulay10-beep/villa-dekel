@@ -41,7 +41,7 @@ const cleanPhotos = [
 ];
 
 const amenities = [
-  { label: "בריכה מחוממת פרטית" },
+  { label: "בריכה פרטית מחוממת" },
   { label: "5 חדרי שינה" },
   { label: "3 חדרי אמבטיה" },
   { label: "נוף פנורמי לים סוף" },
@@ -49,10 +49,10 @@ const amenities = [
   { label: "מיזוג אוויר מרכזי" },
   { label: "WiFi מהיר" },
   { label: "חניה חינם" },
-  { label: "מנגל ופרגולה" },
+  { label: "מטבח חוץ ופרגולה" },
   { label: "גינה מטופחת" },
   { label: "מקלחת חוץ" },
-  { label: "עד 12 אורחים" },
+  { label: "ממ\"ד" },
 ];
 
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -558,7 +558,7 @@ export default function Home() {
             נוף<br />הדקל
           </h1>
           <p className="text-white/75 text-xl md:text-2xl font-light mb-10 max-w-md leading-relaxed">
-            5 חדרי שינה · בריכה מחוממת פרטית<br />
+            5 חדרי שינה · בריכה פרטית מחוממת<br />
             נוף פנורמי לים סוף ולהרי עקבה
           </p>
           <div className="flex flex-wrap gap-3">
@@ -587,7 +587,7 @@ export default function Home() {
       {/* ── FACTS BAR ────────────────────────────────────── */}
       <section className="bg-[#0F1729] text-white/75 text-base tracking-wide py-5">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center gap-x-10 gap-y-2">
-          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה מחוממת פרטית", "10/10 Booking.com"].map((t) => (
+          {["הרעות 18, אילת", "עד 12 אורחים", "5 חדרי שינה · 3 חדרי רחצה", "בריכה פרטית מחוממת", "10/10 Booking.com"].map((t) => (
             <span key={t} className="flex items-center gap-2">
               <span className="w-1 h-1 rounded-full bg-[#C9A84C] inline-block" />
               {t}
@@ -607,11 +607,11 @@ export default function Home() {
             <p className="text-gray-500 text-lg leading-[1.9] mb-5">
               וילה נוף הדקל היא פינת גן עדן פרטית המשקיפה על ים סוף והרי עקבה.
               הבריכה המחוממת הפרטית, מרחב המחיה המרווח ועיצוב פנים יוקרתי —
-              הכל תוכנן לחופשה משפחתית שלא נשכחת.
+              הכל תוכנן לחופשה משפחתית שלא תישכח.
             </p>
             <p className="text-gray-500 text-lg leading-[1.9] mb-10">
               5 חדרי שינה מרווחים, 3 חדרי אמבטיה, מטבח מאובזר לחלוטין,
-              פרגולה עם מנגל ומרפסת פנורמית — הכל תחת קורת גג אחת.
+              פרגולה עם מטבח חוץ וגינה פנורמית — הכל תחת קורת גג אחת.
             </p>
             <div className="inline-flex items-baseline gap-4 border-t border-[#E8D5B7] pt-6">
               <span className="font-display text-5xl text-[#C9A84C] font-light">10</span>
