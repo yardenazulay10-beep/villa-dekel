@@ -775,7 +775,7 @@ export default function Home() {
                 {/* Navigation buttons */}
                 <div className="flex gap-3 pt-2">
                   <a
-                    href="https://waze.com/ul?ll=29.54208,34.94206&navigate=yes"
+                    href="https://waze.com/ul?ll=29.542760,34.943146&navigate=yes"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-[#05C8F7] hover:bg-[#00b5e0] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
@@ -797,7 +797,7 @@ export default function Home() {
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
               <iframe
-                src="https://maps.google.com/maps?q=29.54208,34.94206&hl=he&z=17&output=embed"
+                src="https://maps.google.com/maps?q=29.542760,34.943146&hl=he&z=17&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
