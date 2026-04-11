@@ -763,15 +763,36 @@ export default function Home() {
               <div className="space-y-4 text-base text-gray-600">
                 {[
                   ["הרעות 18, אילת", "כתובת"],
-                  ["5 דקות", "לחוף הים"],
-                  ["10 דקות", "למרכז העיר"],
-                  ["15 דקות", "לנמל התעופה"],
+                  ["8 דקות הליכה", "לחוף הים"],
+                  ["10 דקות נסיעה", "למרכז העיר"],
+                  ["20 דקות נסיעה", "לנמל התעופה"],
                 ].map(([val, label]) => (
                   <div key={label} className="flex items-center gap-4 border-b border-gray-100 pb-4">
-                    <span className="font-semibold text-[#0F1729] w-32 flex-shrink-0">{val}</span>
+                    <span className="font-semibold text-[#0F1729] w-36 flex-shrink-0">{val}</span>
                     <span className="text-gray-400">{label}</span>
                   </div>
                 ))}
+                {/* Navigation buttons */}
+                <div className="flex gap-3 pt-2">
+                  <a
+                    href="https://waze.com/ul?q=הרעות+18+אילת&navigate=yes"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[#05C8F7] hover:bg-[#00b5e0] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.54 6.63C19.3 3.15 15.79 1 12 1 7.19 1 3.25 4.6 3.03 9.4c-.1 2.2.6 4.3 1.97 5.97L3.5 19.5l4.5-1.35c1.3.7 2.77 1.1 4.3 1.1h.01C17.02 19.25 21 15.2 21 10.29c0-1.33-.17-2.58-.46-3.66z"/></svg>
+                    נווט ב-Waze
+                  </a>
+                  <a
+                    href="https://maps.google.com/?q=הרעות+18+אילת"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-white hover:bg-gray-50 text-[#0F1729] text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 transition-all"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                    פתח ב-Google Maps
+                  </a>
+                </div>
               </div>
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
