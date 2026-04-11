@@ -4,6 +4,30 @@ const LISTING_ID = process.env.AIRBNB_LISTING_ID!;
 const API_KEY = process.env.AIRBNB_API_KEY!;
 const HASH = process.env.AIRBNB_CALENDAR_HASH!;
 
+async function fetchAirbnbMonthsRaw(month: number, year: number, count: number) {
+  const variables = JSON.stringify({ request: { count, listingId: LISTING_ID, month, year } });
+  const extensions = JSON.stringify({ persistedQuery: { version: 1, sha256Hash: HASH } });
+  const url =
+    `https://www.airbnb.com/api/v3/PdpAvailabilityCalendar` +
+    `?operationName=PdpAvailabilityCalendar` +
+    `&locale=he&currency=ILS` +
+    `&variables=${encodeURIComponent(variables)}` +
+    `&extensions=${encodeURIComponent(extensions)}`;
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "X-Airbnb-API-Key": API_KEY,
+      "Accept": "application/json",
+      "Accept-Language": "he-IL,he;q=0.9,en;q=0.8",
+      "Referer": `https://www.airbnb.com/rooms/${LISTING_ID}`,
+      "Origin": "https://www.airbnb.com",
+    },
+    signal: AbortSignal.timeout(12000),
+    cache: "no-store",
+  });
+  return { status: res.status, data: res.ok ? await res.json() : await res.text() };
+}
+
 async function fetchAirbnbMonths(month: number, year: number, count: number): Promise<string[]> {
   const variables = JSON.stringify({ request: { count, listingId: LISTING_ID, month, year } });
   const extensions = JSON.stringify({ persistedQuery: { version: 1, sha256Hash: HASH } });
@@ -54,7 +78,13 @@ async function fetchAirbnbMonths(month: number, year: number, count: number): Pr
 
 export const revalidate = 1800;
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  if (searchParams.get("debug") === "1") {
+    const today = new Date();
+    const raw = await fetchAirbnbMonthsRaw(today.getMonth() + 1, today.getFullYear(), 4);
+    return NextResponse.json(raw);
+  }
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
