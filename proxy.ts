@@ -8,7 +8,7 @@ const LIMITS: Record<string, number> = {
 
 const store = new Map<string, { count: number; reset: number }>();
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const limit = LIMITS[pathname];
   if (!limit) return NextResponse.next();
