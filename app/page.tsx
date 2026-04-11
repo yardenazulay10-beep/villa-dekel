@@ -511,6 +511,102 @@ function GuestFormModal({ data, onClose }: { data: BookingData; onClose: () => v
   );
 }
 
+function AccessibilityWidget() {
+  const [open, setOpen] = useState(false);
+  const [fontSize, setFontSize] = useState(0);
+  const [highContrast, setHighContrast] = useState(false);
+  const [grayscale, setGrayscale] = useState(false);
+  const [dyslexia, setDyslexia] = useState(false);
+  const [keyboardNav, setKeyboardNav] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.fontSize = fontSize === 0 ? "" : fontSize === 1 ? "110%" : "125%";
+  }, [fontSize]);
+
+  useEffect(() => {
+    document.body.classList.toggle("a11y-contrast", highContrast);
+  }, [highContrast]);
+
+  useEffect(() => {
+    document.body.classList.toggle("a11y-grayscale", grayscale);
+  }, [grayscale]);
+
+  useEffect(() => {
+    document.body.classList.toggle("a11y-dyslexia", dyslexia);
+  }, [dyslexia]);
+
+  useEffect(() => {
+    document.body.classList.toggle("a11y-keyboard", keyboardNav);
+  }, [keyboardNav]);
+
+  const reset = () => {
+    setFontSize(0); setHighContrast(false); setGrayscale(false);
+    setDyslexia(false); setKeyboardNav(false);
+    document.documentElement.style.fontSize = "";
+  };
+
+  const Btn = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+    <button
+      onClick={onClick}
+      className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-all border ${active ? "bg-[#0F1729] text-white border-[#0F1729]" : "bg-white text-[#0F1729] border-gray-200 hover:bg-gray-50"}`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <>
+      <style>{`
+        .a11y-contrast { filter: contrast(1.5); }
+        .a11y-grayscale { filter: grayscale(1); }
+        .a11y-contrast.a11y-grayscale { filter: contrast(1.5) grayscale(1); }
+        .a11y-dyslexia * { font-family: Arial, sans-serif !important; letter-spacing: 0.05em !important; line-height: 1.8 !important; }
+        .a11y-keyboard *:focus { outline: 3px solid #C9A84C !important; outline-offset: 2px !important; }
+      `}</style>
+
+      {/* Toggle button */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="פתח תפריט נגישות"
+        className="fixed bottom-24 left-6 z-50 w-12 h-12 rounded-full bg-[#0F1729] text-white shadow-xl flex items-center justify-center hover:bg-[#1a2540] transition-all"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+          <path d="M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-1 5h2l1 4 3-1 .5 1.9-3 .9.5 5.2h-2l-.5-4h-1l-.5 4h-2l.5-5.2-3-.9.5-1.9 3 1z"/>
+        </svg>
+      </button>
+
+      {/* Panel */}
+      {open && (
+        <div className="fixed bottom-40 left-6 z-50 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 space-y-2" dir="rtl">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-semibold text-[#0F1729] text-sm">נגישות</span>
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+          </div>
+
+          {/* Font size */}
+          <div className="flex gap-1">
+            <button onClick={() => setFontSize((f) => Math.max(0, f - 1))} className="flex-1 border border-gray-200 rounded-lg py-1.5 text-sm hover:bg-gray-50">A−</button>
+            <button onClick={() => setFontSize((f) => Math.min(2, f + 1))} className="flex-1 border border-gray-200 rounded-lg py-1.5 text-base font-bold hover:bg-gray-50">A+</button>
+          </div>
+
+          <Btn label="ניגודיות גבוהה" active={highContrast} onClick={() => setHighContrast((v) => !v)} />
+          <Btn label="גווני אפור" active={grayscale} onClick={() => setGrayscale((v) => !v)} />
+          <Btn label="פונט דיסלקציה" active={dyslexia} onClick={() => setDyslexia((v) => !v)} />
+          <Btn label="ניווט מקלדת" active={keyboardNav} onClick={() => setKeyboardNav((v) => !v)} />
+
+          <button onClick={reset} className="w-full text-center text-xs text-gray-400 hover:text-gray-600 pt-1">
+            איפוס הגדרות
+          </button>
+          <a href="/accessibility" className="block text-center text-xs text-[#C9A84C] hover:underline">
+            הצהרת נגישות
+          </a>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function Home() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -849,6 +945,9 @@ export default function Home() {
         </p>
         <p>© 2026 נוף הדקל. כל הזכויות שמורות.</p>
       </footer>
+
+      {/* ── ACCESSIBILITY WIDGET ─────────────────────────── */}
+      <AccessibilityWidget />
 
       {/* ── FLOATING WHATSAPP ────────────────────────────── */}
       <a
