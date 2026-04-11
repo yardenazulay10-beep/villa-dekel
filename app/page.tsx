@@ -776,7 +776,7 @@ export default function Home() {
             </div>
             <div className="relative h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-sm">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3396.2!2d34.9543!3d29.5587!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15006042ab12cad7%3A0x0!2z15TXkNeQ16nXoiAyNywg15DXmdeX16Q!5e0!3m2!1she!2sil!4v1"
+                src="https://maps.google.com/maps?q=האושר+27,+אילת,+ישראל&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -850,9 +850,22 @@ export default function Home() {
         <div
           className="fixed inset-0 bg-black/97 z-50 flex flex-col items-center justify-center"
           onClick={() => setLightboxOpen(false)}
+          onTouchStart={(e) => {
+            const t = e.touches[0];
+            (e.currentTarget as HTMLDivElement).dataset.touchX = String(t.clientX);
+          }}
+          onTouchEnd={(e) => {
+            const startX = Number((e.currentTarget as HTMLDivElement).dataset.touchX ?? 0);
+            const endX = e.changedTouches[0].clientX;
+            const delta = startX - endX;
+            if (Math.abs(delta) < 40) return;
+            e.stopPropagation();
+            if (delta > 0) setActiveIdx((p) => (p + 1) % cleanPhotos.length);
+            else setActiveIdx((p) => (p - 1 + cleanPhotos.length) % cleanPhotos.length);
+          }}
         >
           <button
-            className="absolute top-5 right-5 text-white/50 hover:text-white text-3xl font-light leading-none z-10"
+            className="absolute top-5 right-5 text-white/60 hover:text-white text-4xl font-light leading-none z-10 w-10 h-10 flex items-center justify-center"
             onClick={() => setLightboxOpen(false)}
           >
             ×
@@ -861,21 +874,22 @@ export default function Home() {
             {activeIdx + 1} / {cleanPhotos.length}
           </span>
 
+          {/* Arrows — hidden on mobile (swipe instead) */}
           <button
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-5xl font-thin leading-none"
+            className="hidden md:flex absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white text-3xl leading-none transition-all"
             onClick={(e) => { e.stopPropagation(); setActiveIdx((p) => (p - 1 + cleanPhotos.length) % cleanPhotos.length); }}
           >
             ‹
           </button>
           <button
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-5xl font-thin leading-none"
+            className="hidden md:flex absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white text-3xl leading-none transition-all"
             onClick={(e) => { e.stopPropagation(); setActiveIdx((p) => (p + 1) % cleanPhotos.length); }}
           >
             ›
           </button>
 
           <div
-            className="relative w-full max-w-5xl px-16 rounded-xl overflow-hidden"
+            className="relative w-full max-w-5xl px-4 md:px-16 rounded-xl overflow-hidden"
             style={{ height: "78vh" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -887,8 +901,11 @@ export default function Home() {
             />
           </div>
 
+          {/* Swipe hint — mobile only */}
+          <p className="md:hidden text-white/25 text-xs mt-2">החליקו לצדדים למעבר תמונה</p>
+
           {/* Thumbnails */}
-          <div className="absolute bottom-4 inset-x-0 flex justify-center gap-1 flex-wrap px-6 mt-4">
+          <div className="absolute bottom-4 inset-x-0 hidden md:flex justify-center gap-1 flex-wrap px-6 mt-4">
             {cleanPhotos.map((src, i) => (
               <button
                 key={src}
