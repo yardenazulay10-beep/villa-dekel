@@ -55,17 +55,6 @@ const amenities = [
   { label: "ממ\"ד" },
 ];
 
-function BookingScore() {
-  const [score, setScore] = useState("10.0");
-  const [date, setDate] = useState("אפריל 2026");
-  useEffect(() => {
-    fetch("/api/booking-score")
-      .then((r) => r.json())
-      .then((d) => { setScore(d.score); setDate(d.date); })
-      .catch(() => {});
-  }, []);
-  return <span>ציון {score}/10 ב-Booking.com (נכון ל{date})</span>;
-}
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -685,11 +674,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Booking badge */}
-        <div className="absolute top-6 left-6 md:left-12 z-10 flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/10 text-white/80 text-xs px-3.5 py-1.5 rounded-full">
-          <span className="text-[#E2C47A]">★</span>
-          <BookingScore />
-        </div>
       </section>
 
       {/* ── FACTS BAR ────────────────────────────────────── */}
@@ -702,7 +686,7 @@ export default function Home() {
             </span>
           ))}
         </div>
-        <p className="text-center text-white/25 text-xs mt-3">* נכון לאפריל 2026</p>
+
       </section>
 
       {/* ── ABOUT ────────────────────────────────────────── */}
