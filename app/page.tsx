@@ -784,7 +784,7 @@ export default function Home() {
                     נווט ב-Waze
                   </a>
                   <a
-                    href="https://maps.app.goo.gl/jcnG4ioS8bDp9vPKA"
+                    href="https://maps.google.com/?q=29.542760,34.943146"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-white hover:bg-gray-50 text-[#0F1729] text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 transition-all"
