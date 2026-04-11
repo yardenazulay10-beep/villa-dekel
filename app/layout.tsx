@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "נוף הדקל | וילה פרימיום באילת",
     description:
-      "5 חדרי שינה • בריכה פרטית מחוממת • נוף פנורמי לים סוף • ציון 10/10 ב-Booking.com",
+      "5 חדרי שינה • בריכה פרטית מחוממת • נוף פנורמי לים סוף והרי ירדן • הזמינו ישירות וחסכו",
     locale: "he_IL",
     type: "website",
   },
