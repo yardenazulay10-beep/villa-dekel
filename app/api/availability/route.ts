@@ -4,7 +4,12 @@ const BASE = process.env.HOTELPMS_BASE_URL!;
 const DEKEL_ID = 18;
 const MIN_NIGHTS = 2;
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
+function isValidDate(s: string): boolean {
+  const d = new Date(s + "T00:00:00");
+  return !isNaN(d.getTime()) && d.toISOString().startsWith(s);
+}
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -17,8 +22,8 @@ export async function POST(req: NextRequest) {
   const { checkin, checkout, adults = 2, children = 0 } = body as Record<string, unknown>;
 
   if (
-    typeof checkin !== "string" || !DATE_RE.test(checkin) ||
-    typeof checkout !== "string" || !DATE_RE.test(checkout)
+    typeof checkin !== "string" || !DATE_RE.test(checkin) || !isValidDate(checkin) ||
+    typeof checkout !== "string" || !DATE_RE.test(checkout) || !isValidDate(checkout)
   ) {
     return NextResponse.json({ error: "Invalid dates" }, { status: 400 });
   }
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
   const childrenNum = Math.min(Math.max(parseInt(String(children)) || 0, 0), 20);
 
   const nights = Math.round(
-    (new Date(checkout).getTime() - new Date(checkin).getTime()) / 86400000
+    (new Date(checkout + "T00:00:00").getTime() - new Date(checkin + "T00:00:00").getTime()) / 86400000
   );
 
   if (nights < 1 || nights > 90) {
@@ -42,6 +47,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${BASE}/Availabilities`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
         checkin,
         checkout,

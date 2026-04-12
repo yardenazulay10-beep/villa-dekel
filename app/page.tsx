@@ -127,14 +127,20 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
 
   const check = async () => {
     if (!checkIn || !checkOut) return;
+    const reqCheckIn = checkIn;
+    const reqCheckOut = checkOut;
     setStatus("loading"); setResult(null);
     try {
       const res = await fetch("/api/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ checkin: checkIn, checkout: checkOut, adults: parseInt(guests) }),
+        body: JSON.stringify({ checkin: reqCheckIn, checkout: reqCheckOut, adults: parseInt(guests) }),
+        signal: AbortSignal.timeout(20000),
       });
+      if (!res.ok) { setStatus("error"); return; }
       const data: AvailResult = await res.json();
+      // discard if user changed selection while request was in flight
+      if (reqCheckIn !== checkIn || reqCheckOut !== checkOut) return;
       setResult(data);
       setStatus(data.available ? "available" : "unavailable");
     } catch { setStatus("error"); }
@@ -170,10 +176,13 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
             const isEnd = iso === checkOut;
             const inRange = !!(checkIn && hoverEnd && iso > checkIn && iso < hoverEnd);
             const disabled = isPast || isBlocked;
+            const dayLabel = `${parseInt(iso.split("-")[2])} ${HE_MONTHS[month]} ${year}${isBlocked ? " — תפוס" : isPast ? " — עבר" : ""}`;
             return (
               <button
                 key={iso}
                 type="button"
+                aria-label={dayLabel}
+                aria-pressed={isStart || isEnd}
                 onClick={() => handleDayClick(iso)}
                 onMouseEnter={() => !disabled && setHover(iso)}
                 onMouseLeave={() => setHover(null)}
@@ -221,8 +230,8 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
         ) : (
           <>
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
-              <button type="button" onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
+              <button type="button" aria-label="חודש קודם" onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
+              <button type="button" aria-label="חודש הבא" onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {renderMonth(viewDate)}
@@ -245,8 +254,9 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
 
       {/* Guests */}
       <div>
-        <label className="block text-base text-gray-600 mb-2 font-medium">מספר אורחים</label>
+        <label htmlFor="guests-select" className="block text-base text-gray-600 mb-2 font-medium">מספר אורחים</label>
         <select
+          id="guests-select"
           className="w-full bg-white border border-[#E0D5C5] rounded-xl px-4 py-4 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
           value={guests}
           onChange={(e) => { setGuests(e.target.value); setStatus("idle"); setResult(null); }}
@@ -340,6 +350,11 @@ function GuestFormModal({ data, onClose }: { data: BookingData; onClose: () => v
     e.preventDefault();
     if (honeypot) return; // bot filled the hidden field — silently reject
     if (cooldown) return;
+    const cleanName = name.trim().slice(0, 100);
+    const cleanPhone = phone.trim().replace(/[^\d\s\-\+\(\)]/g, "").slice(0, 20);
+    const cleanEmail = email.trim().slice(0, 100);
+    const cleanNotes = notes.trim().slice(0, 500);
+
     const msg = [
       `🏡 *בקשת הזמנה — נוף הדקל*`,
       ``,
@@ -349,36 +364,38 @@ function GuestFormModal({ data, onClose }: { data: BookingData; onClose: () => v
       `👥 אורחים: ${data.guests}`,
       data.priceTotal ? `💰 מחיר: ₪${data.priceTotal.toLocaleString("he-IL")}` : "",
       ``,
-      `👤 שם: ${name}`,
-      `📞 טלפון: ${phone}`,
-      email ? `📧 אימייל: ${email}` : "",
-      notes ? `📝 הערות: ${notes}` : "",
-    ].filter((l) => l !== undefined && l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+      `👤 שם: ${cleanName}`,
+      `📞 טלפון: ${cleanPhone}`,
+      cleanEmail ? `📧 אימייל: ${cleanEmail}` : "",
+      cleanNotes ? `📝 הערות: ${cleanNotes}` : "",
+    ].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n").trim();
 
-    const cleanName = name.trim().slice(0, 100);
-    const cleanPhone = phone.trim().replace(/[^\d\s\-\+\(\)]/g, "").slice(0, 20);
-    const cleanEmail = email.trim().slice(0, 100);
-    const cleanNotes = notes.trim().slice(0, 500);
-
-    const safeMsg = msg
-      .replace(/name/g, cleanName)
-      .replace(/phone/g, cleanPhone)
-      .replace(/email/g, cleanEmail)
-      .replace(/notes/g, cleanNotes);
-    void safeMsg; // msg already uses the raw vars — just validate above
-
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    const opened = window.open(waUrl, "_blank");
+    // Show success regardless — WhatsApp link is the best we can do client-side.
+    // If popup is blocked, show fallback link instead of silent failure.
+    if (!opened) {
+      window.location.href = waUrl;
+    }
     setSent(true);
     setCooldown(true);
     setTimeout(() => setCooldown(false), 30000);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="טופס בקשת הזמנה"
+      onKeyDown={handleKeyDown}
+    >
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <span className="text-sm font-medium text-[#0F1729]">פרטי הזמנה</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none font-light">×</button>
+          <button onClick={onClose} aria-label="סגור טופס" className="text-gray-400 hover:text-gray-700 text-2xl leading-none font-light">×</button>
         </div>
 
         {sent ? (
@@ -435,45 +452,53 @@ function GuestFormModal({ data, onClose }: { data: BookingData; onClose: () => v
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-600 mb-1.5">שם מלא *</label>
+                <label htmlFor="booking-name" className="block text-sm text-gray-600 mb-1.5">שם מלא *</label>
                 <input
+                  id="booking-name"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ישראל ישראלי"
+                  maxLength={100}
                   className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1.5">טלפון / וואטסאפ *</label>
+                <label htmlFor="booking-phone" className="block text-sm text-gray-600 mb-1.5">טלפון / וואטסאפ *</label>
                 <input
+                  id="booking-phone"
                   required
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="050-0000000"
+                  maxLength={20}
                   className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
                   dir="ltr"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1.5">אימייל</label>
+                <label htmlFor="booking-email" className="block text-sm text-gray-600 mb-1.5">אימייל</label>
                 <input
+                  id="booking-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@email.com"
+                  maxLength={100}
                   className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
                   dir="ltr"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1.5">הערות מיוחדות</label>
+                <label htmlFor="booking-notes" className="block text-sm text-gray-600 mb-1.5">הערות מיוחדות</label>
                 <textarea
+                  id="booking-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="בקשות מיוחדות, שאלות..."
                   rows={3}
+                  maxLength={500}
                   className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
                 />
               </div>
@@ -957,8 +982,13 @@ export default function Home() {
       {/* ── LIGHTBOX ─────────────────────────────────────── */}
       {lightboxOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`גלריה — תמונה ${activeIdx + 1} מתוך ${cleanPhotos.length}`}
           className="fixed inset-0 bg-black/97 z-50 flex flex-col items-center justify-center"
           onClick={() => setLightboxOpen(false)}
+          onKeyDown={(e) => { if (e.key === "Escape") setLightboxOpen(false); if (e.key === "ArrowRight") setActiveIdx((p) => (p - 1 + cleanPhotos.length) % cleanPhotos.length); if (e.key === "ArrowLeft") setActiveIdx((p) => (p + 1) % cleanPhotos.length); }}
+          tabIndex={-1}
           onTouchStart={(e) => {
             const t = e.touches[0];
             (e.currentTarget as HTMLDivElement).dataset.touchX = String(t.clientX);
@@ -974,6 +1004,7 @@ export default function Home() {
           }}
         >
           <button
+            aria-label="סגור גלריה"
             className="absolute top-5 right-5 text-white/60 hover:text-white text-4xl font-light leading-none z-10 w-10 h-10 flex items-center justify-center"
             onClick={() => setLightboxOpen(false)}
           >
@@ -985,12 +1016,14 @@ export default function Home() {
 
           {/* Arrows — hidden on mobile (swipe instead) */}
           <button
+            aria-label="תמונה קודמת"
             className="hidden md:flex absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white text-3xl leading-none transition-all"
             onClick={(e) => { e.stopPropagation(); setActiveIdx((p) => (p - 1 + cleanPhotos.length) % cleanPhotos.length); }}
           >
             ‹
           </button>
           <button
+            aria-label="תמונה הבאה"
             className="hidden md:flex absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white text-3xl leading-none transition-all"
             onClick={(e) => { e.stopPropagation(); setActiveIdx((p) => (p + 1) % cleanPhotos.length); }}
           >
@@ -1004,8 +1037,9 @@ export default function Home() {
           >
             <Image
               src={cleanPhotos[activeIdx]}
-              alt={`תמונה ${activeIdx + 1}`}
+              alt={`תמונה ${activeIdx + 1} מתוך ${cleanPhotos.length}`}
               fill
+              sizes="(max-width: 768px) 100vw, 1024px"
               className="object-contain"
             />
           </div>
@@ -1018,10 +1052,12 @@ export default function Home() {
             {cleanPhotos.map((src, i) => (
               <button
                 key={src}
+                aria-label={`תמונה ${i + 1}`}
+                aria-current={i === activeIdx ? "true" : undefined}
                 onClick={(e) => { e.stopPropagation(); setActiveIdx(i); }}
                 className={`relative w-9 h-6 rounded overflow-hidden border transition-all flex-shrink-0 ${i === activeIdx ? "border-[#C9A84C] opacity-100" : "border-transparent opacity-30 hover:opacity-60"}`}
               >
-                <Image src={src} alt="" fill className="object-cover" />
+                <Image src={src} alt="" fill sizes="36px" className="object-cover" />
               </button>
             ))}
           </div>
