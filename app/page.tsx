@@ -736,7 +736,7 @@ export default function Home() {
       </section>
 
       {/* ── GALLERY ──────────────────────────────────────── */}
-      <section className="section-padding bg-white px-6 md:px-16">
+      <section id="gallery" className="section-padding bg-white px-6 md:px-16">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-10">
             <div>
