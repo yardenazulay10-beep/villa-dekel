@@ -180,8 +180,8 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
                 disabled={disabled}
                 className={[
                   "h-10 w-full text-sm transition-all rounded-lg",
-                  disabled ? "text-gray-300 cursor-not-allowed" : "cursor-pointer",
-                  isBlocked && !isPast ? "line-through decoration-gray-300" : "",
+                  isPast ? "text-gray-300 cursor-not-allowed" : "",
+                  isBlocked ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : (!isPast ? "cursor-pointer" : ""),
                   isStart || isEnd ? "bg-[#0F1729] text-white font-bold" : "",
                   inRange ? "bg-[#F0E8D4] rounded-none" : "",
                   !disabled && !isStart && !isEnd && !inRange ? "hover:bg-[#F5EDD8]" : "",
