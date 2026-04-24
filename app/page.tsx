@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+
+declare global { interface Window { gtag?: (...args: unknown[]) => void; } }
 
 const WHATSAPP_NUMBER = "972544830310";
 const WHATSAPP_MSG = encodeURIComponent("שלום, אשמח לשמוע פרטים על וילה נוף הדקל ולבדוק זמינות.");
@@ -41,18 +43,18 @@ const cleanPhotos = [
 ];
 
 const amenities = [
-  { label: "בריכה פרטית מחוממת" },
-  { label: "5 חדרי שינה" },
-  { label: "3 חדרי אמבטיה" },
-  { label: "נוף פנורמי לים סוף" },
-  { label: "נוף להרי עקבה" },
-  { label: "מיזוג אוויר מרכזי" },
-  { label: "WiFi מהיר" },
-  { label: "חניה חינם" },
-  { label: "מטבח חוץ ופרגולה" },
-  { label: "גינה מטופחת" },
-  { label: "מקלחת חוץ" },
-  { label: "ממ\"ד" },
+  { label: "בריכה פרטית מחוממת", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 18c0-1.5 1.5-3 3-3s3 1.5 3 1.5 1.5-3 3-3 1.5 3 3 3 1.5-3 3-3" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 3a3 3 0 0 1 3 3v6H9V6a3 3 0 0 1 3-3z" /></svg> },
+  { label: "5 חדרי שינה", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2 9V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3M2 9h20M2 9v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9M6 13h4m4 0h4" /></svg> },
+  { label: "3 חדרי אמבטיה", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 10V7a2 2 0 0 1 2-2h3M3 10v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M8 5V3" /></svg> },
+  { label: "נוף פנורמי לים סוף", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" /></svg> },
+  { label: "נוף להרי עקבה", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 20l4-8 4 4 4-6 6 10H3z" /></svg> },
+  { label: "מיזוג אוויר מרכזי", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 8h18M12 8v12M8 12l4-4 4 4" /></svg> },
+  { label: "WiFi מהיר", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M1.5 8.5a15 15 0 0 1 21 0M5 12.5a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0" /><circle cx="12" cy="20" r="1" fill="currentColor" /></svg> },
+  { label: "חניה חינם", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="12" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M7 19v-2M17 19v-2M2 11h20M5 7l2-4h10l2 4" /></svg> },
+  { label: "מטבח חוץ ופרגולה", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M7 6V4M12 6V4M17 6V4M5 12h14l-1 8H6l-1-8z" /></svg> },
+  { label: "גינה מטופחת", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 22V12m0-6a4 4 0 0 1 4-4c0 4-4 4-4 4m0-4a4 4 0 0 0-4-4c0 4 4 4 4 4M7 12a5 5 0 0 1 5-5 5 5 0 0 1 5 5H7z" /></svg> },
+  { label: "מקלחת חוץ", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v4M9 7h6M12 11v10M8 13l1.5 1.5M16 13l-1.5 1.5M8 17l1.5-1.5M16 17l-1.5-1.5" /></svg> },
+  { label: "ממ\"ד", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 21V9h6v12" /></svg> },
 ];
 
 
@@ -66,33 +68,16 @@ function WhatsAppIcon({ className }: { className?: string }) {
 }
 
 
-// Hebrew week in RTL grid: Sun(right, col0) → Sat(left, col6)
-const HE_DAYS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
-const HE_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const MINIHOTEL_BASE = "https://frame1.hotelpms.io/BookingFrameClient/hotel/38B5E378B595CF5AF5E034B1E97C2E49/b193d60a-cbf5-45b3-9bba-7c12b388d417/book/rooms?currency=ILS&language=he-IL&roomType=DEKEL_VIEW";
+function minihotelUrl(ci: string, co: string) { return `${MINIHOTEL_BASE}&checkin=${ci}&checkout=${co}`; }
 
-function toISO(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+const HE_DAYS = ["א","ב","ג","ד","ה","ו","ש"];
+const HE_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+function toISO(d: Date) { return d.toISOString().split("T")[0]; }
 function parseDate(s: string) { return new Date(s + "T00:00:00"); }
-function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
 function formatHe(iso: string) { const d = parseDate(iso); return `${d.getDate()} ${HE_MONTHS[d.getMonth()]}`; }
 
-type AvailResult = {
-  available: boolean;
-  reason?: "min_nights" | "booked" | "unavailable";
-  minNights?: number;
-  priceTotal: number | null;
-  pricePerNight: number | null;
-  nights: number;
-  token?: string | null;
-};
-
-type BookingData = AvailResult & { checkIn: string; checkOut: string; guests: string };
-
-function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void }) {
+function BookingWidget() {
   const todayISO = toISO(new Date());
   const [blocked, setBlocked] = useState<Set<string>>(new Set());
   const [calLoading, setCalLoading] = useState(true);
@@ -101,71 +86,50 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
   const [checkOut, setCheckOut] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
   const [guests, setGuests] = useState("4");
-  const [status, setStatus] = useState<"idle" | "loading" | "available" | "unavailable" | "error">("idle");
-  const [result, setResult] = useState<AvailResult | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
-    fetch("/api/blocked-dates", { signal: controller.signal })
-      .then((r) => r.json())
-      .then((d) => setBlocked(new Set(d.blockedDates)))
-      .catch(() => {})
-      .finally(() => { clearTimeout(timer); setCalLoading(false); });
-    return () => { controller.abort(); clearTimeout(timer); };
+    const ctrl = new AbortController();
+    fetch("/api/blocked-dates", { signal: ctrl.signal })
+      .then(r => r.json()).then(d => setBlocked(new Set(d.blockedDates))).catch(() => {})
+      .finally(() => setCalLoading(false));
+    return () => ctrl.abort();
   }, []);
 
-  const handleDayClick = (iso: string) => {
+  const handleDay = (iso: string) => {
     if (iso < todayISO || blocked.has(iso)) return;
-    if (!checkIn || checkOut) {
-      setCheckIn(iso); setCheckOut(null); setStatus("idle"); setResult(null);
-    } else {
-      if (iso <= checkIn) { setCheckIn(iso); setCheckOut(null); return; }
-      setCheckOut(iso);
-    }
+    if (!checkIn || checkOut) { setCheckIn(iso); setCheckOut(null); }
+    else { if (iso <= checkIn) { setCheckIn(iso); setCheckOut(null); } else { setCheckOut(iso); } }
   };
 
-  const check = async () => {
+  const nights = checkIn && checkOut
+    ? Math.round((parseDate(checkOut).getTime() - parseDate(checkIn).getTime()) / 86400000)
+    : null;
+
+  const book = () => {
     if (!checkIn || !checkOut) return;
-    const reqCheckIn = checkIn;
-    const reqCheckOut = checkOut;
-    setStatus("loading"); setResult(null);
-    try {
-      const res = await fetch("/api/availability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ checkin: reqCheckIn, checkout: reqCheckOut, adults: parseInt(guests) }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!res.ok) { setStatus("error"); return; }
-      const data: AvailResult = await res.json();
-      // discard if user changed selection while request was in flight
-      if (reqCheckIn !== checkIn || reqCheckOut !== checkOut) return;
-      setResult(data);
-      setStatus(data.available ? "available" : "unavailable");
-    } catch { setStatus("error"); }
+    window.gtag?.("event", "booking_initiated", {
+      event_category: "booking",
+      check_in: checkIn,
+      check_out: checkOut,
+      nights,
+      guests,
+    });
+    window.open(minihotelUrl(checkIn, checkOut), "_blank", "noopener,noreferrer");
   };
-
-  const openBooking = useCallback(() => {
-    if (!checkIn || !checkOut || !result) return;
-    onBook({ ...result, checkIn, checkOut, guests });
-  }, [checkIn, checkOut, result, guests, onBook]);
 
   const renderMonth = (monthStart: Date) => {
     const year = monthStart.getFullYear(), month = monthStart.getMonth();
-    // RTL grid: col0=Sun(right), col6=Sat(left). firstDay = getDay() directly.
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const cells: (string | null)[] = Array(firstDay).fill(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(toISO(new Date(year, month, d)));
     while (cells.length % 7 !== 0) cells.push(null);
     const hoverEnd = hover && checkIn && !checkOut ? hover : checkOut;
-
     return (
       <div>
         <div className="text-center font-semibold text-[#0F1729] mb-3 text-base">{HE_MONTHS[month]} {year}</div>
         <div className="grid grid-cols-7 gap-0.5 mb-1">
-          {HE_DAYS.map((d) => <div key={d} className="text-center text-sm text-gray-400 py-1">{d}</div>)}
+          {HE_DAYS.map(d => <div key={d} className="text-center text-xs text-gray-400 py-1">{d}</div>)}
         </div>
         <div className="grid grid-cols-7 gap-0.5">
           {cells.map((iso, i) => {
@@ -176,28 +140,19 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
             const isEnd = iso === checkOut;
             const inRange = !!(checkIn && hoverEnd && iso > checkIn && iso < hoverEnd);
             const disabled = isPast || isBlocked;
-            const dayLabel = `${parseInt(iso.split("-")[2])} ${HE_MONTHS[month]} ${year}${isBlocked ? " — תפוס" : isPast ? " — עבר" : ""}`;
             return (
-              <button
-                key={iso}
-                type="button"
-                aria-label={dayLabel}
-                aria-pressed={isStart || isEnd}
-                onClick={() => handleDayClick(iso)}
-                onMouseEnter={() => !disabled && setHover(iso)}
-                onMouseLeave={() => setHover(null)}
+              <button key={iso} type="button" onClick={() => handleDay(iso)}
+                onMouseEnter={() => !disabled && setHover(iso)} onMouseLeave={() => setHover(null)}
                 disabled={disabled}
                 className={[
-                  "h-10 w-full text-sm transition-all rounded-lg",
+                  "h-9 w-full text-sm transition-all rounded-lg",
                   isPast ? "text-gray-300 cursor-not-allowed" : "",
-                  isBlocked ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : (!isPast ? "cursor-pointer" : ""),
+                  isBlocked ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : "",
                   isStart || isEnd ? "bg-[#0F1729] text-white font-bold" : "",
                   inRange ? "bg-[#F0E8D4] rounded-none" : "",
-                  !disabled && !isStart && !isEnd && !inRange ? "hover:bg-[#F5EDD8]" : "",
+                  !disabled && !isStart && !isEnd && !inRange ? "hover:bg-[#F5EDD8] cursor-pointer" : "",
                 ].filter(Boolean).join(" ")}
-              >
-                {parseInt(iso.split("-")[2])}
-              </button>
+              >{parseInt(iso.split("-")[2])}</button>
             );
           })}
         </div>
@@ -205,337 +160,73 @@ function AvailabilityWidget({ onBook }: { onBook: (data: BookingData) => void })
     );
   };
 
-  const prevMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
-  const nextMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  const prevMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const nextMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   const nextMonthDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
 
   return (
     <div className="space-y-4">
-      {/* Selected range display */}
       <div className="grid grid-cols-2 gap-3">
-        {([["הגעה", checkIn], ["עזיבה", checkOut]] as [string, string | null][]).map(([label, value]) => (
+        {([["הגעה", checkIn], ["עזיבה", checkOut]] as [string, string | null][]).map(([label, val]) => (
           <div key={label} className="border border-[#E0D5C5] rounded-xl px-4 py-3 bg-white">
-            <div className="text-sm text-gray-400 mb-0.5">{label}</div>
+            <div className="text-xs text-gray-400 mb-0.5">{label}</div>
             <div className="text-base font-semibold text-[#0F1729]">
-              {value ? formatHe(value) : <span className="text-gray-300 font-normal">בחרו תאריך</span>}
+              {val ? formatHe(val) : <span className="text-gray-300 font-normal text-sm">בחרו תאריך</span>}
             </div>
           </div>
         ))}
       </div>
-
-      {/* Calendar */}
       <div className="border border-[#E0D5C5] rounded-2xl p-4 bg-white">
         {calLoading ? (
-          <div className="text-center py-8 text-base text-gray-400">טוען זמינות...</div>
+          <div className="text-center py-8 text-sm text-gray-400">טוען זמינות...</div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-3">
-              <button type="button" aria-label="חודש קודם" onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
-              <button type="button" aria-label="חודש הבא" onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
+              <button type="button" onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
+              <button type="button" onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {renderMonth(viewDate)}
               {renderMonth(nextMonthDate)}
             </div>
-            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-gray-100 text-sm text-gray-400">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#0F1729] inline-block" /> נבחר
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-gray-200 inline-block" /> תפוס
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-200 inline-block" /> עבר
-              </span>
+            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#0F1729] inline-block" /> נבחר</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-200 inline-block" /> עבר</span>
             </div>
           </>
         )}
       </div>
-
-      {/* Guests */}
       <div>
-        <label htmlFor="guests-select" className="block text-base text-gray-600 mb-2 font-medium">מספר אורחים</label>
-        <select
-          id="guests-select"
-          className="w-full bg-white border border-[#E0D5C5] rounded-xl px-4 py-4 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
-          value={guests}
-          onChange={(e) => { setGuests(e.target.value); setStatus("idle"); setResult(null); }}
-        >
-          {[1,2,3,4,5,6,7,8,9,10,11,12].map((n) => (
-            <option key={n} value={n}>{n} אורחים</option>
-          ))}
+        <label htmlFor="guests-sel" className="block text-sm text-gray-600 mb-2 font-medium">מספר אורחים</label>
+        <select id="guests-sel" value={guests} onChange={e => setGuests(e.target.value)}
+          className="w-full bg-white border border-[#E0D5C5] rounded-xl px-4 py-3.5 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors">
+          {[2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n} אורחים</option>)}
         </select>
       </div>
-
-      <button
-        type="button"
-        onClick={check}
-        disabled={!checkIn || !checkOut || status === "loading"}
-        className="w-full bg-[#0F1729] hover:bg-[#1a2540] disabled:opacity-40 text-white font-bold py-4 rounded-xl transition-all text-base"
-      >
-        {status === "loading" ? "בודק זמינות..." : !checkIn ? "בחרו תאריך הגעה" : !checkOut ? "בחרו תאריך עזיבה" : "בדקו מחיר"}
-      </button>
-
-      {status === "available" && result && (
-        <div className="rounded-2xl border border-[#C9A84C]/50 bg-gradient-to-br from-[#FFFDF7] to-[#FDF8EC] p-6 space-y-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="label-gold !mb-1 !text-base">✓ זמין — הזמינו ישירות</p>
-              <p className="text-5xl font-display text-[#0F1729] font-light leading-none">₪{result.priceTotal?.toLocaleString("he-IL")}</p>
-              {result.pricePerNight && (
-                <p className="text-base text-gray-400 mt-2">₪{result.pricePerNight?.toLocaleString("he-IL")} ללילה · {result.nights} לילות</p>
-              )}
-            </div>
-            <span className="w-5 h-5 rounded-full bg-green-400 flex-shrink-0 mt-1 shadow-sm" />
+      {checkIn && checkOut && nights ? (
+        <div className="rounded-2xl border border-[#C9A84C]/40 bg-gradient-to-br from-[#FFFDF7] to-[#FDF8EC] p-5 space-y-3">
+          <div className="text-sm text-gray-500">
+            <span className="font-semibold text-[#0F1729]">{formatHe(checkIn)}</span>
+            {" → "}
+            <span className="font-semibold text-[#0F1729]">{formatHe(checkOut)}</span>
+            {" · "}{nights} לילות · {guests} אורחים
           </div>
-          <button
-            type="button"
-            onClick={openBooking}
-            className="w-full bg-[#C9A84C] hover:bg-[#D4B45A] text-[#0F1729] font-bold py-4 rounded-xl transition-all text-lg shadow-lg"
-          >
+          <button type="button" onClick={book}
+            className="w-full bg-[#C9A84C] hover:bg-[#D4B45A] text-[#0F1729] font-bold py-4 rounded-xl transition-all text-base shadow-lg">
             המשך להזמנה ←
           </button>
-          <p className="text-center text-sm text-gray-400">אילת — אזור פטור ממע״מ</p>
+          <p className="text-center text-xs text-gray-400">המחיר הסופי יוצג בשלב הבא · אילת — אזור פטור ממע&quot;מ</p>
         </div>
-      )}
-
-      {status === "unavailable" && result && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 space-y-3">
-          {result.reason === "min_nights" ? (
-            <>
-              <div className="flex items-center gap-2 justify-center">
-                <span className="text-2xl">📅</span>
-                <p className="text-base font-bold text-amber-800">מינימום {result.minNights} לילות</p>
-              </div>
-              <p className="text-sm text-amber-700 text-center">
-                הוילה דורשת שהייה מינימלית של {result.minNights} לילות. בחרו תאריך יציאה מאוחר יותר.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-base font-bold text-gray-700 text-center">הוילה תפוסה בתאריכים אלה</p>
-              <p className="text-sm text-gray-500 text-center">נסו תאריכים אחרים או צרו קשר ישירות</p>
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b858] text-white font-bold py-4 rounded-xl transition-all text-base"
-              >
-                <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
-                שאלו על תאריכים פנויים
-              </a>
-            </>
-          )}
-        </div>
-      )}
-
-      {status === "error" && (
-        <p className="text-center text-sm text-red-400">שגיאה בבדיקת הזמינות. נסו שוב.</p>
+      ) : (
+        <button type="button" disabled
+          className="w-full bg-[#0F1729]/10 text-[#0F1729]/30 font-bold py-4 rounded-xl text-base cursor-not-allowed">
+          {!checkIn ? "בחרו תאריך הגעה" : "בחרו תאריך עזיבה"}
+        </button>
       )}
     </div>
   );
 }
 
-function GuestFormModal({ data, onClose }: { data: BookingData; onClose: () => void }) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [notes, setNotes] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [cooldown, setCooldown] = useState(false);
-  const [honeypot, setHoneypot] = useState(""); // bot trap
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (honeypot) return; // bot filled the hidden field — silently reject
-    if (cooldown) return;
-    const cleanName = name.trim().slice(0, 100);
-    const cleanPhone = phone.trim().replace(/[^\d\s\-\+\(\)]/g, "").slice(0, 20);
-    const cleanEmail = email.trim().slice(0, 100);
-    const cleanNotes = notes.trim().slice(0, 500);
-
-    const msg = [
-      `🏡 *בקשת הזמנה — נוף הדקל*`,
-      ``,
-      `📅 הגעה: ${formatHe(data.checkIn)}`,
-      `📅 עזיבה: ${formatHe(data.checkOut)}`,
-      `🌙 לילות: ${data.nights}`,
-      `👥 אורחים: ${data.guests}`,
-      data.priceTotal ? `💰 מחיר: ₪${data.priceTotal.toLocaleString("he-IL")}` : "",
-      ``,
-      `👤 שם: ${cleanName}`,
-      `📞 טלפון: ${cleanPhone}`,
-      cleanEmail ? `📧 אימייל: ${cleanEmail}` : "",
-      cleanNotes ? `📝 הערות: ${cleanNotes}` : "",
-    ].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-
-    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-    const opened = window.open(waUrl, "_blank");
-    // Show success regardless — WhatsApp link is the best we can do client-side.
-    // If popup is blocked, show fallback link instead of silent failure.
-    if (!opened) {
-      window.location.href = waUrl;
-    }
-    setSent(true);
-    setCooldown(true);
-    setTimeout(() => setCooldown(false), 30000);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="טופס בקשת הזמנה"
-      onKeyDown={handleKeyDown}
-    >
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <span className="text-sm font-medium text-[#0F1729]">פרטי הזמנה</span>
-          <button onClick={onClose} aria-label="סגור טופס" className="text-gray-400 hover:text-gray-700 text-2xl leading-none font-light">×</button>
-        </div>
-
-        {sent ? (
-          <div className="p-8 text-center space-y-4">
-            <div className="text-5xl">✅</div>
-            <h3 className="text-xl font-semibold text-[#0F1729]">הבקשה נשלחה!</h3>
-            <p className="text-gray-500 text-base leading-relaxed">
-              הצוות של הרים אילת יחזור אליכם לאישור תוך 24 שעות.
-            </p>
-            <button
-              onClick={onClose}
-              className="mt-4 w-full bg-[#0F1729] text-white font-medium py-3 rounded-xl text-base"
-            >
-              סגור
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="p-6 space-y-4">
-            {/* Booking summary */}
-            <div className="bg-[#FAF8F4] border border-[#E8D5B7] rounded-xl p-4 text-sm space-y-1.5 text-[#0F1729]">
-              <div className="flex justify-between">
-                <span className="text-gray-500">הגעה</span>
-                <span className="font-medium">{formatHe(data.checkIn)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">עזיבה</span>
-                <span className="font-medium">{formatHe(data.checkOut)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">לילות</span>
-                <span className="font-medium">{data.nights}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">אורחים</span>
-                <span className="font-medium">{data.guests}</span>
-              </div>
-              {data.priceTotal && (
-                <div className="flex justify-between pt-2 border-t border-[#E8D5B7] font-semibold text-base">
-                  <span>סה״כ לתשלום</span>
-                  <span className="text-[#C9A84C]">₪{data.priceTotal.toLocaleString("he-IL")}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Honeypot — hidden from humans, filled by bots */}
-            <input
-              type="text"
-              value={honeypot}
-              onChange={(e) => setHoneypot(e.target.value)}
-              tabIndex={-1}
-              aria-hidden="true"
-              style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }}
-            />
-
-            <div className="space-y-3">
-              <div>
-                <label htmlFor="booking-name" className="block text-sm text-gray-600 mb-1.5">שם מלא *</label>
-                <input
-                  id="booking-name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="ישראל ישראלי"
-                  maxLength={100}
-                  className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                />
-              </div>
-              <div>
-                <label htmlFor="booking-phone" className="block text-sm text-gray-600 mb-1.5">טלפון / וואטסאפ *</label>
-                <input
-                  id="booking-phone"
-                  required
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="050-0000000"
-                  maxLength={20}
-                  className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label htmlFor="booking-email" className="block text-sm text-gray-600 mb-1.5">אימייל</label>
-                <input
-                  id="booking-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@email.com"
-                  maxLength={100}
-                  className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label htmlFor="booking-notes" className="block text-sm text-gray-600 mb-1.5">הערות מיוחדות</label>
-                <textarea
-                  id="booking-notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="בקשות מיוחדות, שאלות..."
-                  rows={3}
-                  maxLength={500}
-                  className="w-full border border-[#E0D5C5] rounded-xl px-4 py-3 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Consent checkbox — required by Amendment 13 2024 */}
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                required
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-0.5 w-4 h-4 accent-[#C9A84C] flex-shrink-0"
-              />
-              <span className="text-xs text-gray-500 leading-relaxed">
-                אני מאשר/ת שהפרטים שמסרתי יועברו להרים אילת לצורך טיפול בבקשת ההזמנה, בהתאם ל
-                <a href="/privacy" target="_blank" className="underline text-[#C9A84C] hover:text-[#A07828]">מדיניות הפרטיות</a>.
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              disabled={cooldown || !consent}
-              className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b858] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all text-base shadow-md"
-            >
-              <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
-              {cooldown ? "נשלח..." : "שלחו בקשת הזמנה בוואטסאפ"}
-            </button>
-            <p className="text-center text-xs text-gray-400">
-              הבקשה תישלח לצוות הרים אילת · אישור תוך 24 שעות
-            </p>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
@@ -636,14 +327,12 @@ function AccessibilityWidget() {
 export default function Home() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   const openLightbox = (src: string) => {
     const idx = cleanPhotos.indexOf(src);
     setActiveIdx(idx >= 0 ? idx : 0);
     setLightboxOpen(true);
   };
-  const openBookingModal = useCallback((data: BookingData) => { setBookingData(data); }, []);
 
   return (
     <main className="min-h-screen bg-[#FAFAF8]">
@@ -661,13 +350,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
 
         {/* Nav */}
-        <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 pt-6">
-          <a
-            href="#booking"
-            className="text-white/90 text-sm font-medium border border-white/30 px-5 py-2 rounded-full hover:bg-white/10 transition-all backdrop-blur-sm"
-          >
-            בדקו זמינות
-          </a>
+        <nav className="relative z-10 flex items-center justify-end px-6 md:px-12 pt-6">
           <span className="text-white font-display text-xl font-light tracking-widest">נוף הדקל</span>
         </nav>
 
@@ -680,12 +363,12 @@ export default function Home() {
             5 חדרי שינה · בריכה פרטית מחוממת<br />
             נוף פנורמי לים סוף ולהרי עקבה
           </p>
-          <div className="flex flex-wrap gap-3">
+<div className="flex flex-wrap gap-3">
             <a
               href="#booking"
               className="inline-flex items-center gap-2.5 bg-[#C9A84C] hover:bg-[#E2C47A] text-[#0F1729] font-semibold px-7 py-3.5 rounded-full transition-all text-sm shadow-xl"
             >
-              בדקו זמינות והזמינו
+              הזמינו עכשיו
             </a>
             <button
               onClick={() => openLightbox(cleanPhotos[0])}
@@ -827,9 +510,32 @@ export default function Home() {
                   תיאום אישי עם הצוות
                 </div>
               </div>
+
+              {/* Social proof quote */}
+              <blockquote className="mt-10 border-r-2 border-[#C9A84C] pr-5">
+                <p className="text-gray-500 text-base leading-relaxed italic">
+                  "הוילה עברה את כל הציפיות שלנו. הבריכה, הנוף, השקט — חופשה שלמה."
+                </p>
+                <footer className="mt-3 text-sm text-[#C9A84C] font-medium">משפחת כהן · חנוכה 2024 · ציון 10/10</footer>
+              </blockquote>
             </div>
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E8D5B7]/60">
-              <AvailabilityWidget onBook={openBookingModal} />
+
+              {/* Mobile value-prop strip */}
+              <div className="flex md:hidden justify-between text-center text-xs text-gray-500 mb-6 pb-5 border-b border-gray-100">
+                <div><p className="text-lg font-semibold text-[#0F1729]">5</p><p>חדרי שינה</p></div>
+                <div><p className="text-lg font-semibold text-[#0F1729]">12</p><p>אורחים</p></div>
+                <div><p className="text-lg font-semibold text-[#0F1729]">10/10</p><p>Booking.com</p></div>
+                <div><p className="text-lg font-semibold text-[#C9A84C]">₪790</p><p>ללילה</p></div>
+              </div>
+
+              {/* Urgency signal */}
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
+                <span className="text-base">🔥</span>
+                <span>הקיץ מתמלא מהר — בדקו זמינות עכשיו</span>
+              </div>
+
+              <BookingWidget />
             </div>
           </div>
         </div>
@@ -843,11 +549,12 @@ export default function Home() {
             <h2 className="font-display text-5xl text-[#0F1729] font-light">כל מה שצריך</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-px bg-[#E8D5B7]">
-            {amenities.map(({ label }) => (
+            {amenities.map(({ label, icon }) => (
               <div
                 key={label}
-                className="bg-[#FAFAF8] flex items-center justify-center text-center py-8 px-4"
+                className="bg-[#FAFAF8] flex flex-col items-center justify-center text-center py-8 px-4 gap-3"
               >
+                <span className="text-[#C9A84C]">{icon}</span>
                 <span className="text-[#0F1729] text-base font-light">{label}</span>
               </div>
             ))}
@@ -870,14 +577,14 @@ export default function Home() {
               </p>
               <div className="space-y-4 text-base text-gray-600">
                 {[
-                  ["הרעות 18, אילת", "כתובת"],
-                  ["8 דקות הליכה", "לחוף הים"],
-                  ["10 דקות נסיעה", "לטיילת אילת"],
-                  ["20 דקות נסיעה", "לנמל התעופה"],
-                ].map(([val, label]) => (
+                  ["כתובת", "הרעות 18, אילת"],
+                  ["חוף הים", "8 דקות הליכה"],
+                  ["טיילת אילת", "10 דקות נסיעה"],
+                  ["נמל התעופה", "20 דקות נסיעה"],
+                ].map(([label, val]) => (
                   <div key={label} className="flex items-center gap-4 border-b border-gray-100 pb-4">
-                    <span className="font-semibold text-[#0F1729] w-36 flex-shrink-0">{val}</span>
-                    <span className="text-gray-400">{label}</span>
+                    <span className="font-semibold text-[#0F1729] w-36 flex-shrink-0">{label}</span>
+                    <span className="text-gray-400">{val}</span>
                   </div>
                 ))}
                 {/* Navigation buttons */}
@@ -912,6 +619,56 @@ export default function Home() {
                 title="מפת מיקום הוילה"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────── */}
+      <section className="section-padding px-6 md:px-16 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="label-gold">שאלות נפוצות</p>
+            <h2 className="font-display text-5xl text-[#0F1729] font-light">כל מה שרציתם לדעת</h2>
+          </div>
+          <div className="space-y-0 divide-y divide-gray-100">
+            {[
+              {
+                q: "כמה אורחים יכולים להתארח בוילה?",
+                a: "הוילה מתאימה עד 12 אורחים רשמית, עם 5 חדרי שינה ו-3 חדרי אמבטיה מלאים. ניתן להוסיף מיטות מתקפלות לצרכים מיוחדים.",
+              },
+              {
+                q: "האם הבריכה מחוממת כל השנה?",
+                a: "כן. הבריכה הפרטית מחוממת ופתוחה לשימוש בלעדי של האורחים לאורך כל השנה — גם בחורף.",
+              },
+              {
+                q: "כמה רחוקה הוילה מהחוף?",
+                a: "8 דקות הליכה לחוף הים, 10 דקות נסיעה לטיילת אילת, ו-20 דקות נסיעה משדה התעופה.",
+              },
+              {
+                q: "איך מתבצעת ההזמנה?",
+                a: "בוחרים תאריכים בדף זה ולוחצים על 'המשך להזמנה'. המערכת תציג את המחיר הסופי ותאפשר לאשר. ניתן גם לפנות ישירות להרים אילת בוואטסאפ: 054-483-0310.",
+              },
+              {
+                q: "האם המחיר כולל מע\"מ?",
+                a: "אילת היא אזור מס מיוחד הפטור ממע\"מ — המחיר שמוצג הוא המחיר הסופי, ללא תוספות.",
+              },
+              {
+                q: "מה מדיניות הביטול?",
+                a: "ביטול מעל 5 ימים לפני ההגעה — ללא חיוב. ביטול בין 24 שעות ל-5 ימים לפני — חיוב של 50%. ביטול פחות מ-24 שעות או אי הגעה — חיוב מלא.",
+              },
+              {
+                q: "האם מותר להביא חיות מחמד?",
+                a: "הוילה אינה מתאימה לחיות מחמד.",
+              },
+            ].map(({ q, a }) => (
+              <details key={q} className="group py-5 cursor-pointer list-none">
+                <summary className="flex items-center justify-between gap-4 text-base font-medium text-[#0F1729] marker:hidden [&::-webkit-details-marker]:hidden">
+                  {q}
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full border border-[#C9A84C] text-[#C9A84C] flex items-center justify-center text-sm transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 text-gray-500 text-base leading-relaxed pr-1">{a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
@@ -974,12 +731,7 @@ export default function Home() {
         בדקו זמינות
       </a>
 
-      {/* ── BOOKING MODAL ────────────────────────────────── */}
-      {bookingData && (
-        <GuestFormModal data={bookingData} onClose={() => setBookingData(null)} />
-      )}
-
-      {/* ── LIGHTBOX ─────────────────────────────────────── */}
+{/* ── LIGHTBOX ─────────────────────────────────────── */}
       {lightboxOpen && (
         <div
           role="dialog"

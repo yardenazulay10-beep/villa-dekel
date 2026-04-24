@@ -36,11 +36,22 @@ Hebrew only (RTL). Israeli market.
 WhatsApp floating button + "בדקו זמינות" → links to Harim contact / booking page
 
 ## Tech Stack
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS
 - shadcn/ui components
 - Deployed to Vercel
+
+## Booking Engine — MiniHotel PMS
+Booking is handled entirely via **MiniHotel iframe** — no custom availability code.
+- Provider: MiniHotel (minihotel.io) — contact: Arkadi
+- iframe src: `https://frame1.hotelpms.io/BookingFrameClient/hotel/38B5E378B595CF5AF5E034B1E97C2E49/b193d60a-cbf5-45b3-9bba-7c12b388d417/book/rooms?currency=ILS&language=he-IL&roomType=DEKEL_VIEW`
+- Scripts loaded via `next/script` (lazyOnload): `iframe-resizer.min.js` + `main.js`
+- Constants: `MINIHOTEL_IFRAME_SRC`, `MINIHOTEL_RESIZER_JS`, `MINIHOTEL_MAIN_JS` at top of `app/page.tsx`
+- To add another villa: get new iframe URL from Arkadi with different `roomType=` param
+- **DO NOT** rebuild a custom calendar/availability widget — MiniHotel handles it all
+- Old API routes (`/api/availability`, `/api/blocked-dates`) were deleted — do not recreate
+- Old env vars no longer needed: `HOTELPMS_BASE_URL`, `AIRBNB_ICAL_URL`, `MANUAL_BLOCKED_DATES`
 
 ## Capacity
 - 12 guests official, can accommodate more with extra mattresses
