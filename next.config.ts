@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const ALLOWED_ORIGINS = ["https://nofhadekel.com", "https://www.nofhadekel.com"];
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -16,9 +18,15 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: process.env.NODE_ENV === "production" ? "https://nofhadekel.com" : "*" },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: process.env.NODE_ENV === "production"
+              ? ALLOWED_ORIGINS.join(", ")
+              : "*",
+          },
           { key: "Access-Control-Allow-Methods", value: "GET, POST" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+          { key: "Vary", value: "Origin" },
         ],
       },
     ];

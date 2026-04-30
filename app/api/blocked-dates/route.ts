@@ -35,7 +35,10 @@ export async function GET() {
         const blocked = parseIcal(await res.text()).filter(d => d >= todayISO);
         return NextResponse.json({ blockedDates: blocked, source: "ical" });
       }
-    } catch { /* fall through */ }
+      console.error("[blocked-dates] iCal fetch failed", { status: res.status });
+    } catch (err) {
+      console.error("[blocked-dates] iCal fetch error", { error: String(err) });
+    }
   }
 
   if (MANUAL_DATES) {
