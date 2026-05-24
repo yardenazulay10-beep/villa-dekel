@@ -526,7 +526,6 @@ export default function Home() {
                 <div><p className="text-lg font-semibold text-[#0F1729]">5</p><p>חדרי שינה</p></div>
                 <div><p className="text-lg font-semibold text-[#0F1729]">12</p><p>אורחים</p></div>
                 <div><p className="text-lg font-semibold text-[#0F1729]">10/10</p><p>Booking.com</p></div>
-                <div><p className="text-lg font-semibold text-[#C9A84C]">₪790</p><p>ללילה</p></div>
               </div>
 
               {/* Urgency signal */}
