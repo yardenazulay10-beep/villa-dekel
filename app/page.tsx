@@ -494,7 +494,6 @@ export default function Home() {
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
                 בחרו תאריכים וראו מיד את המחיר בזמן אמת.
-                הזמנה ישירה — חסכו את דמי השירות של Airbnb ו-Booking.
               </p>
               <div className="space-y-4 text-base text-gray-500">
                 <div className="flex items-center gap-3">
