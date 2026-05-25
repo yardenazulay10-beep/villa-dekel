@@ -73,7 +73,12 @@ function minihotelUrl(ci: string, co: string) { return `${MINIHOTEL_BASE}&checki
 
 const HE_DAYS = ["א","ב","ג","ד","ה","ו","ש"];
 const HE_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
-function toISO(d: Date) { return d.toISOString().split("T")[0]; }
+function toISO(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 function parseDate(s: string) { return new Date(s + "T00:00:00"); }
 function formatHe(iso: string) { const d = parseDate(iso); return `${d.getDate()} ${HE_MONTHS[d.getMonth()]}`; }
 
