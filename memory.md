@@ -97,3 +97,12 @@
 - **Vercel did not auto-deploy.** Pushed 7c092df to main, `Age` on the live edge response kept climbing past 9.68M seconds (last deploy ~112 days ago) with no new build. Vercel CLI is not logged in on this machine. Check whether the GitHub integration is still connected for project `prj_NpnDCmQi1YgDt4YyAcTSD7LTt79g`.
 - All 6 existing videos (`video1`-`video6.mp4`, 640x480/848x480, 11.6MB total) are referenced NOWHERE in the codebase. They are dead files. Recommend deleting; not done without a decision.
 - Hero is still `img48`. `img64` and `img65` are stronger and much higher resolution. Hero swap not done, it is a visible design call.
+
+### Vercel is not connected to Git (found 2026-09-14)
+The villa-dekel project card in the Vercel dashboard reads "Connect Git Repository", as do nalu-preview and mrs-eucalyptus-web. All three show a May date. There is no GitHub integration, so pushing to `main` has never triggered a deploy. Every live deploy to date was a manual CLI push. This is why the edge `Age` header kept climbing past 9.6M seconds with no rebuild.
+
+Fix is one of:
+- Connect the repo in the Vercel project's Settings > Git (authorizes the Vercel GitHub app), after which pushes auto-deploy.
+- Or `vercel login` then `vercel --prod` from the project root for a one-off.
+
+The CLI on this machine has no stored credentials (`C:/Users/yazulay/AppData/Roaming/com.vercel.cli/auth.json` does not exist).
