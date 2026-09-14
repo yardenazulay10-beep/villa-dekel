@@ -176,6 +176,14 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
+        {/* Consent defaults must run before gtag.js loads or they are ignored.
+            analytics_storage denied means GA4 sets no cookies and sends cookieless
+            pings instead, so pageviews and booking_initiated still arrive. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});`,
+          }}
+        />
       </head>
       <body className="min-h-full antialiased">
         {children}
