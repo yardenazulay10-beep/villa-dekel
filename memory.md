@@ -75,3 +75,25 @@
 - **PRODUCT.md and DESIGN.md do not exist**, so the installed Impeccable skill silently refuses all file mutation even though CLAUDE.md auto-triggers it on UI work. Reinstall Impeccable from the plugin marketplace (local copy is an April build on the old `$impeccable` syntax), then run teach + document.
 - **Accessibility exemption to confirm:** Israeli reg. 35ו(ז) exempts an עוסק פטור or turnover at or under 100,000 NIS from the internet accessibility requirement. Check the property's status before spending on accessibility tooling.
 - Full brief: `C:/Users/yazulay/.claude/wiki/daily/2026-09-13-villa-dekel-brief.md`
+
+---
+
+## Session 2026-09-14
+
+### GA4 cookieless + privacy policy (commit b0324b1)
+- Consent Mode v2 defaults are an inline `<script>` in `<head>` in `app/layout.tsx`, before the gtag.js Script tags. Order matters: defaults set after gtag.js loads are ignored.
+- `analytics_storage: 'denied'` gives cookieless pings. `client_storage: 'none'` is NOT a real GA4 parameter, do not reach for it.
+- In the built HTML, `googletagmanager.com/gtag/js` appears at byte ~2143 as a `<link rel="preload">`. That is a fetch hint, not execution, so it does not break consent ordering. The executing inline consent script is further down in `<head>`. Do not "fix" this.
+- Playwright was sitting uncommitted in package.json as an unused devDependency (zero references in the repo). Reverted rather than committed.
+
+### Snir's media (commit 7c092df)
+- Source: `Downloads/וילת אזולאי-20260910T180017Z-1-001.zip` — 38 stills (2160x3840) + `Villa 1 .mov`.
+- **`Villa 2 _ Harim.mov` in Downloads is a DIFFERENT PROPERTY.** Sand-plaster interiors, curved furniture, different pool. Both videos end with the same Harim management plaque because Harim manages several villas. Do not put Villa 2 on this site. Same likely applies to the `La Luna` zip.
+- 20 of 38 stills used, added as img64-img83, no renumbering. The other 18 are soft/foreground-obstructed B-roll frames or show people.
+- Compression recipe: sharp, resize long edge 1800, mozjpeg q78 progressive. ~100KB each.
+- Video trimmed 3s-32s: drops two sunbathers at t=1-2s and the Harim plaque in the last 5.4s. 900x1600 h264 crf26 +faststart = 7.5MB. Click-to-play only, so it never touches LCP.
+
+### Open
+- **Vercel did not auto-deploy.** Pushed 7c092df to main, `Age` on the live edge response kept climbing past 9.68M seconds (last deploy ~112 days ago) with no new build. Vercel CLI is not logged in on this machine. Check whether the GitHub integration is still connected for project `prj_NpnDCmQi1YgDt4YyAcTSD7LTt79g`.
+- All 6 existing videos (`video1`-`video6.mp4`, 640x480/848x480, 11.6MB total) are referenced NOWHERE in the codebase. They are dead files. Recommend deleting; not done without a decision.
+- Hero is still `img48`. `img64` and `img65` are stronger and much higher resolution. Hero swap not done, it is a visible design call.
