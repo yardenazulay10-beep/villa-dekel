@@ -98,11 +98,18 @@
 - All 6 existing videos (`video1`-`video6.mp4`, 640x480/848x480, 11.6MB total) are referenced NOWHERE in the codebase. They are dead files. Recommend deleting; not done without a decision.
 - Hero is still `img48`. `img64` and `img65` are stronger and much higher resolution. Hero swap not done, it is a visible design call.
 
-### Vercel is not connected to Git (found 2026-09-14)
-The villa-dekel project card in the Vercel dashboard reads "Connect Git Repository", as do nalu-preview and mrs-eucalyptus-web. All three show a May date. There is no GitHub integration, so pushing to `main` has never triggered a deploy. Every live deploy to date was a manual CLI push. This is why the edge `Age` header kept climbing past 9.6M seconds with no rebuild.
+### Vercel Git integration (fixed 2026-09-14)
+RESOLVED. The Vercel GitHub App had never been installed on the GitHub account at all, so no project was connected and pushes to main never triggered anything. Every live deploy before today was a manual CLI push. Yarden installed the app and connected yardenazulay10-beep/villa-dekel; commit 7cdcd1a then auto-deployed and the site rebuilt for the first time since May 25.
 
-Fix is one of:
-- Connect the repo in the Vercel project's Settings > Git (authorizes the Vercel GitHub app), after which pushes auto-deploy.
-- Or `vercel login` then `vercel --prod` from the project root for a one-off.
+Still unconnected: nalu-preview and mrs-eucalyptus-web. Same fix if they ever need to deploy from git.
 
-The CLI on this machine has no stored credentials (`C:/Users/yazulay/AppData/Roaming/com.vercel.cli/auth.json` does not exist).
+Gotcha: "Redeploy" in the Vercel dashboard rebuilds an existing deployment's source, so right after connecting it would have rebuilt the May CLI build, not the new commits. Trigger a fresh build with a push (an empty commit works).
+
+The Vercel CLI on this machine has no stored credentials.
+
+### Live verification 2026-09-14 (post-deploy)
+Measured on production, not inferred:
+- `document.cookie` is completely empty after pageview plus two `booking_initiated` events. No `_ga`, no `_ga_*`.
+- Hits reach `google-analytics.com/g/collect` with `tid=G-H4ZDVC2SVB` and `gcs=G100` (analytics_storage denied). `cid` is generated in memory per session, which is the expected cookieless behaviour.
+- `booking_initiated` payload arrives complete: `ep.check_in`, `ep.check_out`, `ep.guests`, `ep.event_category`, and `epn.nights` (numeric params use the `epn.` prefix, not `ep.` — do not mistake that for a missing value).
+- Hero serves img64, video7 poster loads, `video7.mp4` is not requested until clicked, `video1`-`video6` return 404.
