@@ -12,7 +12,7 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
 // Curated clean photos only — no people, best quality
 const img = (n: number) => `/media/img${n}.jpg`;
 
-const heroSrc = img(48); // pool + loungers + panoramic Red Sea + Aqaba mountains
+const heroSrc = img(64); // pool + loungers + villa architecture (Snir 2026, portrait, suits the mobile hero)
 
 const aboutSrc = img(56); // open-plan living/dining with pool + sea through full-height doors
 
