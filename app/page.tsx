@@ -16,24 +16,29 @@ const heroSrc = img(48); // pool + loungers + panoramic Red Sea + Aqaba mountain
 
 const aboutSrc = img(56); // open-plan living/dining with pool + sea through full-height doors
 
-// 12 featured gallery images — professional shots, no duplicates with hero/about
+// 12 featured gallery images — Snir's 2026 shoot first, professional shots only
 const galleryPreview = [
-  img(48), // pool + Red Sea panorama          ← featured large
-  img(42), // garden + pool + sea view
-  img(63), // heated pool + Aqaba mountains
-  img(61), // living room leather sofa (professional)
-  img(34), // bedroom — panoramic sea windows
-  img(37), // BBQ Weber with Red Sea backdrop
-  img(46), // pool through architectural frame
-  img(38), // pool + sun loungers close
+  img(64), // pool + loungers + villa architecture   ← featured large
+  img(65), // pool + Red Sea + Aqaba mountains through glass doors
+  img(70), // living room leather sofas + pool view
+  img(68), // open-plan kitchen and dining
+  img(76), // bedroom — panoramic sea windows
+  img(66), // pool + villa exterior
+  img(67), // villa exterior + pergola
+  img(73), // covered terrace at dusk
   img(58), // marble bathroom
-  img(43), // bedroom — clean white
-  img(35), // dining table + staircase
+  img(79), // bedroom — warm textiles
   img(50), // bathroom with tub
+  img(82), // sunset over the pool
 ];
 
 // All clean photos for lightbox (no people, no low-quality shots)
+// img64-img83 are Snir's 2026 shoot, higher resolution than the originals, so they lead.
 const cleanPhotos = [
+  img(64), img(65), img(66), img(67), img(68), img(69),
+  img(70), img(71), img(72), img(73), img(74), img(75),
+  img(76), img(77), img(78), img(79), img(80), img(81),
+  img(82), img(83),
   img(48), img(56), img(42), img(63), img(61), img(34),
   img(37), img(46), img(38), img(58), img(43), img(35),
   img(50), img(55), img(40), img(41), img(36), img(39),
@@ -41,6 +46,9 @@ const cleanPhotos = [
   img(16), img(20), img(8),  img(19), img(21), img(26),
   img(6),  img(1),  img(2),  img(10), img(15), img(18),
 ];
+
+const TOUR_VIDEO = "/media/video7.mp4";
+const TOUR_POSTER = "/media/video7-poster.jpg";
 
 const amenities = [
   { label: "בריכה פרטית מחוממת", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 18c0-1.5 1.5-3 3-3s3 1.5 3 1.5 1.5-3 3-3 1.5 3 3 3 1.5-3 3-3" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 3a3 3 0 0 1 3 3v6H9V6a3 3 0 0 1 3-3z" /></svg> },
@@ -332,6 +340,7 @@ function AccessibilityWidget() {
 export default function Home() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [tourPlaying, setTourPlaying] = useState(false);
 
   const openLightbox = (src: string) => {
     const idx = cleanPhotos.indexOf(src);
@@ -484,6 +493,57 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </button>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── VIDEO TOUR ─────────────────────── */}
+      <section className="section-padding px-6 md:px-16 bg-[#0F1729]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="label-gold">סיור מצולם</p>
+            <h2 className="font-display text-5xl text-white font-light">הוילה בתנועה</h2>
+          </div>
+
+          <div className="mx-auto w-full max-w-[420px]">
+            <div className="relative aspect-[9/16] rounded-3xl overflow-hidden bg-black">
+              {tourPlaying ? (
+                <video
+                  src={TOUR_VIDEO}
+                  poster={TOUR_POSTER}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setTourPlaying(true)}
+                  aria-label="נגן את סרטון הסיור בווילה"
+                  className="group absolute inset-0 h-full w-full"
+                >
+                  <Image
+                    src={TOUR_POSTER}
+                    alt="סיור מצולם בווילה נוף הדקל"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 420px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-20 w-20 items-center justify-center rounded-full border border-white/70 bg-black/25 backdrop-blur-sm transition-colors group-hover:bg-black/40">
+                      <svg className="ms-1 h-8 w-8 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                  </span>
+                  <span className="absolute bottom-6 inset-x-0 text-center text-white/80 text-sm font-light tracking-wide">
+                    29 שניות · לחצו לנגינה
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
