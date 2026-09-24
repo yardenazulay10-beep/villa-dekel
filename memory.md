@@ -113,3 +113,16 @@ Measured on production, not inferred:
 - Hits reach `google-analytics.com/g/collect` with `tid=G-H4ZDVC2SVB` and `gcs=G100` (analytics_storage denied). `cid` is generated in memory per session, which is the expected cookieless behaviour.
 - `booking_initiated` payload arrives complete: `ep.check_in`, `ep.check_out`, `ep.guests`, `ep.event_category`, and `epn.nights` (numeric params use the `epn.` prefix, not `ep.` — do not mistake that for a missing value).
 - Hero serves img64, video7 poster loads, `video7.mp4` is not requested until clicked, `video1`-`video6` return 404.
+
+## 2026-09-24: CLAUDE.md was lying about the booking flow
+Corrected after finding the project [[villa-dekel]] CLAUDE.md (dated 24 Apr) described an architecture the code never had. It claimed booking ran through an embedded MiniHotel iframe with iframe-resizer scripts, that the custom calendar was gone, and that `/api/availability` and `/api/blocked-dates` "were deleted, do not recreate".
+
+Reality, verified in the code: the site has its own date picker, fetches `/api/blocked-dates` (route.ts modified 30 Apr, six days *after* CLAUDE.md was written), fires `booking_initiated`, then `window.open()`s MiniHotel in a new tab with dates prefilled. The only iframe on the page is the Google Map. Only `/api/availability` was genuinely deleted.
+
+Also false in that file: shadcn/ui as a dependency. Runtime deps are exactly next, react, react-dom. No Radix, no components.json.
+
+**HANDOFF.md was right the whole time** and describes the real flow. When the two disagree, trust HANDOFF.md, it tracks the code.
+
+The danger was specific: a session following "do not recreate" could have deleted a working, live API route. The same file also told sessions to skip the analytics skill on a site whose only conversion event is a GA4 custom event.
+
+Standing item unchanged: `MINIHOTEL_ICAL_URL` is still unset, so the calendar shows every date as available and the live endpoint returns `{"blockedDates":[],"source":"manual"}`. Guests can pick dates the villa is already booked. Yuval has the URL, via [[harim-eilat]].

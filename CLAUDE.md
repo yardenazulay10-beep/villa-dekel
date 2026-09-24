@@ -36,22 +36,39 @@ Hebrew only (RTL). Israeli market.
 WhatsApp floating button + "בדקו זמינות" → links to Harim contact / booking page
 
 ## Tech Stack
-- Next.js 16 (App Router)
+- Next.js 16.2.3 (App Router)
 - TypeScript
-- Tailwind CSS
-- shadcn/ui components
-- Deployed to Vercel
+- Tailwind CSS v4 (via `@tailwindcss/postcss`)
+- Deployed to Vercel, auto-deploys on push to `main`
+- **No component library.** Runtime dependencies are exactly `next`, `react`, `react-dom`. There is no shadcn/ui, no Radix, no `components.json`. Every component in `app/` is hand-written. Do not `import` from a UI library that is not installed.
+- `middleware.ts` exists and builds warn it is deprecated in favour of `proxy.ts`. Not urgent, but that is the migration when it breaks.
 
-## Booking Engine — MiniHotel PMS
-Booking is handled entirely via **MiniHotel iframe** — no custom availability code.
-- Provider: MiniHotel (minihotel.io) — contact: Arkadi
-- iframe src: `https://frame1.hotelpms.io/BookingFrameClient/hotel/38B5E378B595CF5AF5E034B1E97C2E49/b193d60a-cbf5-45b3-9bba-7c12b388d417/book/rooms?currency=ILS&language=he-IL&roomType=DEKEL_VIEW`
-- Scripts loaded via `next/script` (lazyOnload): `iframe-resizer.min.js` + `main.js`
-- Constants: `MINIHOTEL_IFRAME_SRC`, `MINIHOTEL_RESIZER_JS`, `MINIHOTEL_MAIN_JS` at top of `app/page.tsx`
-- To add another villa: get new iframe URL from Arkadi with different `roomType=` param
-- **DO NOT** rebuild a custom calendar/availability widget — MiniHotel handles it all
-- Old API routes (`/api/availability`, `/api/blocked-dates`) were deleted — do not recreate
-- Old env vars no longer needed: `HOTELPMS_BASE_URL`, `AIRBNB_ICAL_URL`, `MANUAL_BLOCKED_DATES`
+## Booking flow (read this before touching `app/page.tsx`)
+> Corrected 2026-09-24 against the code. The previous version of this section described an architecture that was planned and then reversed, and it told future sessions to delete working files.
+
+Booking is **a custom date picker on this site that hands off to MiniHotel in a new tab.** MiniHotel is not embedded.
+
+1. `app/page.tsx` renders its own calendar. `handleDay` sets `checkIn` / `checkOut`.
+2. On mount it fetches `/api/blocked-dates` to grey out unavailable days.
+3. The CTA fires the GA4 event `booking_initiated`, then calls `window.open(minihotelUrl(checkIn, checkOut))` which opens MiniHotel in a new tab with the dates prefilled.
+
+What actually exists in the code:
+- `MINIHOTEL_BASE` — the one constant, at `app/page.tsx:79`. `minihotelUrl()` on line 80 appends `&checkin=&checkout=`.
+- `app/api/blocked-dates/route.ts` — **live and in use.** Reads `MINIHOTEL_ICAL_URL`, falling back to `MANUAL_BLOCKED_DATES`.
+- The only `<iframe>` on the page is the Google Map.
+- Provider contact for a new `roomType=` URL is still Arkadi at MiniHotel.
+
+Things the old section claimed that are **not true**: there is no MiniHotel iframe, no `iframe-resizer.min.js`, no `main.js`, no `lazyOnload` scripts, and no `MINIHOTEL_IFRAME_SRC` / `MINIHOTEL_RESIZER_JS` / `MINIHOTEL_MAIN_JS` constants. `/api/blocked-dates` was never deleted. `/api/availability` genuinely was.
+
+**Open issue: the calendar shows every date as free.** `MINIHOTEL_ICAL_URL` is unset in Vercel, so the route falls through to `MANUAL_BLOCKED_DATES`, which is also empty. Live it returns `{"blockedDates":[],"source":"manual"}`. A guest can pick dates the villa is already booked and only find out on MiniHotel. Yuval has the iCal export URL; get it via Harim and set `MINIHOTEL_ICAL_URL` in Vercel. `AIRBNB_ICAL_URL` and `HOTELPMS_BASE_URL` are dead names, do not use them.
+
+## Analytics
+GA4 `G-H4ZDVC2SVB` (final character is letter B, not digit 8), running **cookieless** via Consent Mode v2.
+- Consent defaults are an inline `<script>` in `<head>` in `app/layout.tsx`, and must execute before `gtag.js`. Defaults set after it loads are ignored.
+- `analytics_storage: 'denied'` means no `_ga` cookies and cookieless pings. Verified live: zero cookies, `gcs=G100`.
+- In the built HTML `googletagmanager.com/gtag/js` appears early as a `<link rel="preload">`. That is a fetch hint, not execution. Do not "fix" the ordering.
+- `booking_initiated` is the site's only conversion event. Numeric params arrive under the `epn.` prefix (`epn.nights`), strings under `ep.`.
+- `client_storage: 'none'` is not a real GA4 parameter.
 
 ## Capacity
 - 12 guests official, can accommodate more with extra mattresses
@@ -90,6 +107,7 @@ Booking is handled entirely via **MiniHotel iframe** — no custom availability 
 |------|--------------------|
 | Building or redesigning any UI section | `frontend-design` + `ui-ux-pro-max` |
 | Reviewing visual design quality | `design-auditor` |
+| Deep UI polish (`impeccable`) | Needs `PRODUCT.md` and `DESIGN.md` at the project root. Neither exists, so the skill silently refuses every file mutation. Run `impeccable teach` then `impeccable document` first. |
 | Writing or improving Hebrew copy | `copywriting` → then `humanizer` |
 | Improving conversion (CTAs, forms, flow) | `page-cro` |
 | Testing the live or local site | `webapp-testing` (Playwright) |
@@ -102,4 +120,6 @@ Booking is handled entirely via **MiniHotel iframe** — no custom availability 
 | Searching the web for references | `tavily` |
 
 ### Skills NOT relevant to this project
-Analytics, paid ads, email sequences, sales enablement, product management, revops, referral programs — skip these entirely for villa-dekel.
+Paid ads, email sequences, sales enablement, product management, revops and referral programs are not relevant here.
+
+`analytics-tracking` **is** relevant: GA4 is cookieless via Consent Mode and `booking_initiated` is the only conversion event on the site.
