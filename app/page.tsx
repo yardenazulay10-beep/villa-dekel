@@ -16,35 +16,51 @@ const heroSrc = img(64); // pool + loungers + villa architecture (Snir 2026, por
 
 const aboutSrc = img(56); // open-plan living/dining with pool + sea through full-height doors
 
-// 12 featured gallery images — Snir's 2026 shoot first, professional shots only
+// Alt text per image: real descriptions, not "תמונה 3".
+// Screen readers and Google Images both read these, and villa searches are image-led.
+const CAPTIONS: Record<string, string> = {
+  "/media/img64.jpg": "בריכה פרטית מחוממת עם מיטות שיזוף ומבט אל הווילה",
+  "/media/img48.jpg": "בריכה מחוממת ומרפסת שיזוף עם פנורמה לים סוף",
+  "/media/img42.jpg": "גינה מטופחת, בריכה פרטית ונוף לים סוף",
+  "/media/img56.jpg": "מרחב מחיה פתוח עם פינת אוכל ונוף לים",
+  "/media/img61.jpg": "סלון עם ספות עור ונוף לבריכה",
+  "/media/img34.jpg": "חדר שינה עם חלונות פנורמיים לים סוף",
+  "/media/img40.jpg": "סלון מרווח עם תקרה גבוהה וגרם מדרגות",
+  "/media/img39.jpg": "מטבח מאובזר ופינת אוכל",
+  "/media/img58.jpg": "חדר אמבטיה בגימור שיש",
+  "/media/img43.jpg": "חדר שינה בגוונים בהירים",
+  "/media/img41.jpg": "פרגולה מוצלת מעל הבריכה",
+  "/media/img50.jpg": "חדר אמבטיה עם אמבט",
+  "/media/img36.jpg": "חדר שינה עם נוף לים",
+  "/media/img55.jpg": "חדר רחצה עם מקלחת נפרדת",
+  "/media/img38.jpg": "בריכה עם מיטות שיזוף",
+  "/media/img65.jpg": "בריכה, ים סוף והרי עקבה מבעד לדלתות הזכוכית",
+};
+const capt = (src: string) => CAPTIONS[src] ?? "וילה נוף הדקל באילת";
+
+// Trimmed 2026-09-24 from 56 to 16. The cut set was mostly phone snaps: empty
+// garden strips, lens flare, awkward overhead angles. What is left is the
+// professional shoot plus the two strongest frames from Snir's 2026 video.
+// Every room type is still covered: pool, living, kitchen, bedrooms, bathrooms.
 const galleryPreview = [
-  img(64), // pool + loungers + villa architecture   ← featured large
-  img(65), // pool + Red Sea + Aqaba mountains through glass doors
-  img(70), // living room leather sofas + pool view
-  img(68), // open-plan kitchen and dining
-  img(76), // bedroom — panoramic sea windows
-  img(66), // pool + villa exterior
-  img(67), // villa exterior + pergola
-  img(73), // covered terrace at dusk
+  img(48), // pool + sea panorama              ← featured large
+  img(42), // garden + pool + sea
+  img(61), // living room, leather sofas
+  img(34), // bedroom, panoramic sea windows
+  img(40), // living room, high ceiling + stairs
+  img(39), // kitchen + dining
   img(58), // marble bathroom
-  img(79), // bedroom — warm textiles
+  img(43), // bedroom, light tones
+  img(41), // pergola over the pool
   img(50), // bathroom with tub
-  img(82), // sunset over the pool
+  img(36), // bedroom with sea view
+  img(65), // pool + Aqaba mountains through glass
 ];
 
-// All clean photos for lightbox (no people, no low-quality shots)
-// img64-img83 are Snir's 2026 shoot, higher resolution than the originals, so they lead.
 const cleanPhotos = [
-  img(64), img(65), img(66), img(67), img(68), img(69),
-  img(70), img(71), img(72), img(73), img(74), img(75),
-  img(76), img(77), img(78), img(79), img(80), img(81),
-  img(82), img(83),
-  img(48), img(56), img(42), img(63), img(61), img(34),
-  img(37), img(46), img(38), img(58), img(43), img(35),
-  img(50), img(55), img(40), img(41), img(36), img(39),
-  img(44), img(45), img(60), img(62), img(4),  img(9),
-  img(16), img(20), img(8),  img(19), img(21), img(26),
-  img(6),  img(1),  img(2),  img(10), img(15), img(18),
+  img(64), img(48), img(42), img(56), img(61), img(34),
+  img(40), img(39), img(58), img(43), img(41), img(50),
+  img(36), img(55), img(38), img(65),
 ];
 
 const TOUR_VIDEO = "/media/video7.mp4";
@@ -158,7 +174,7 @@ function BookingWidget() {
                 onMouseEnter={() => !disabled && setHover(iso)} onMouseLeave={() => setHover(null)}
                 disabled={disabled}
                 className={[
-                  "h-9 w-full text-sm transition-all rounded-lg",
+                  "h-11 w-full text-sm transition-all rounded-lg",
                   isPast ? "text-gray-300 cursor-not-allowed" : "",
                   isBlocked ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : "",
                   isStart || isEnd ? "bg-[#0F1729] text-white font-bold" : "",
@@ -455,7 +471,7 @@ export default function Home() {
               onClick={() => openLightbox(galleryPreview[0])}
               className="col-span-2 row-span-2 relative h-72 md:h-[480px] rounded-2xl overflow-hidden group"
             >
-              <Image src={galleryPreview[0]} alt="בריכה ים סוף" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={galleryPreview[0]} alt={capt(galleryPreview[0])} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
             </button>
             {galleryPreview.slice(1, 5).map((src, i) => (
@@ -464,7 +480,7 @@ export default function Home() {
                 onClick={() => openLightbox(src)}
                 className="relative h-36 md:h-[232px] rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={`תמונה ${i + 2}`} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </button>
             ))}
@@ -474,7 +490,7 @@ export default function Home() {
                 onClick={() => openLightbox(src)}
                 className="relative h-44 md:h-56 rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={`תמונה ${i + 6}`} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </button>
             ))}
@@ -484,7 +500,7 @@ export default function Home() {
                 onClick={() => openLightbox(src)}
                 className="relative h-44 md:h-56 rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={`תמונה ${i + 10}`} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 {i === 2 && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <span className="text-white text-sm font-light">כל התמונות ({cleanPhotos.length})</span>
@@ -852,7 +868,7 @@ export default function Home() {
           >
             <Image
               src={cleanPhotos[activeIdx]}
-              alt={`תמונה ${activeIdx + 1} מתוך ${cleanPhotos.length}`}
+              alt={capt(cleanPhotos[activeIdx])}
               fill
               sizes="(max-width: 768px) 100vw, 1024px"
               className="object-contain"
@@ -867,7 +883,7 @@ export default function Home() {
             {cleanPhotos.map((src, i) => (
               <button
                 key={src}
-                aria-label={`תמונה ${i + 1}`}
+                aria-label={capt(src)}
                 aria-current={i === activeIdx ? "true" : undefined}
                 onClick={(e) => { e.stopPropagation(); setActiveIdx(i); }}
                 className={`relative w-9 h-6 rounded overflow-hidden border transition-all flex-shrink-0 ${i === activeIdx ? "border-[#C9A84C] opacity-100" : "border-transparent opacity-30 hover:opacity-60"}`}
