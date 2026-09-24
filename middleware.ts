@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const WINDOW_MS = 60_000;
 const LIMITS: Record<string, number> = {
-  "/api/availability": 20,
   "/api/blocked-dates": 10,
 };
 
@@ -39,5 +38,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/availability", "/api/blocked-dates"],
+  matcher: ["/api/blocked-dates"],
 };

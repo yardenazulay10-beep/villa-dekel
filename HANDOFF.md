@@ -1,7 +1,7 @@
 # נוף הדקל — Handoff Guide
 
 > Everything you need to know to continue, hand off, or rebuild this project from scratch.
-> Last updated: April 24, 2026
+> Last updated: September 24, 2026
 
 ---
 
@@ -83,7 +83,6 @@ To add/edit env vars: https://vercel.com/yardenazulay10-beeps-projects/villa-dek
 - **Pool:** Heated private pool
 - **Capacity:** 12 guests (official)
 - **Views:** Red Sea + Aqaba mountains
-- **Booking.com score:** 10/10
 
 ---
 
@@ -134,8 +133,8 @@ To add/edit env vars: https://vercel.com/yardenazulay10-beeps-projects/villa-dek
 - Sitemap submitted: https://www.nofhadekel.com/sitemap.xml
 
 **Schema markup (in layout.tsx):**
-- `VacationRental` — property details, address, geo, amenities, rating
-- `FAQPage` — 6 Q&A pairs
+- `VacationRental` — property details, address, geo, amenities (no rating: the review count could not be verified, so it was removed on 2026-09-24)
+- `FAQPage` — 7 Q&A pairs, generated from `app/faq.ts`, the same array the page renders
 
 **Meta:** Title, description, OG image, Twitter card, canonical, robots all configured.
 

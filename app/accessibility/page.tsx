@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "הצהרת נגישות | נוף הדקל",
   robots: { index: false },
+  alternates: { canonical: "https://www.nofhadekel.com/accessibility" },
 };
 
 export default function AccessibilityPage() {
@@ -12,7 +13,7 @@ export default function AccessibilityPage() {
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="text-sm text-[#C9A84C] hover:underline mb-8 block">← חזרה לדף הבית</Link>
         <h1 className="text-3xl font-semibold text-[#0F1729] mb-2">הצהרת נגישות</h1>
-        <p className="text-sm text-gray-400 mb-10">עדכון אחרון: אפריל 2026</p>
+        <p className="text-sm text-gray-400 mb-10">עדכון אחרון: ספטמבר 2026</p>
 
         <div className="space-y-8 text-[#2C3347] leading-relaxed">
           <section>
@@ -30,7 +31,7 @@ export default function AccessibilityPage() {
               <li>תגיות alt לתמונות</li>
               <li>ניגודיות צבעים סבירה בין טקסט לרקע</li>
               <li>האתר תואם לשימוש במובייל ובדפדפנים מודרניים</li>
-              <li>כל שדות הטופס מסומנים בתוויות ברורות</li>
+              <li>בורר התאריכים ומספר האורחים מסומנים בתוויות ברורות</li>
             </ul>
           </section>
 

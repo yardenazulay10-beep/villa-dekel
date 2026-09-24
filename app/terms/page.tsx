@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "תנאי שימוש | נוף הדקל",
   robots: { index: false },
+  alternates: { canonical: "https://www.nofhadekel.com/terms" },
 };
 
 export default function TermsPage() {
@@ -12,7 +13,7 @@ export default function TermsPage() {
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="text-sm text-[#C9A84C] hover:underline mb-8 block">← חזרה לדף הבית</Link>
         <h1 className="text-3xl font-semibold text-[#0F1729] mb-2">תנאי שימוש</h1>
-        <p className="text-sm text-gray-400 mb-10">עדכון אחרון: אפריל 2026</p>
+        <p className="text-sm text-gray-400 mb-10">עדכון אחרון: ספטמבר 2026</p>
 
         <div className="space-y-8 text-[#2C3347] leading-relaxed">
           <section>
@@ -26,16 +27,16 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold mb-3">2. מטרת האתר</h2>
             <p>
-              האתר נועד לספק מידע על הנכס ולאפשר יצירת קשר לצורך בקשות הזמנה.
-              האתר אינו מבצע עסקאות כספיות ואינו גובה תשלום — כל עסקה מתבצעת ישירות מול הרים אילת.
+              האתר נועד לספק מידע על הנכס ולאפשר בדיקת זמינות. ההזמנה והתשלום עצמם מתבצעים במערכת
+              ההזמנות MiniHotel, המופעלת עבור הרים אילת. האתר עצמו אינו גובה תשלום.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold mb-3">3. דיוק המידע</h2>
             <p>
-              אנו משתדלים לשמור על דיוק המידע המופיע באתר, לרבות מחירים, זמינות ותיאור הנכס.
-              המחירים המוצגים הם אינדיקטיביים ועשויים להשתנות. המחיר הסופי ייקבע מול הרים אילת בעת אישור ההזמנה.
+              אנו משתדלים לשמור על דיוק המידע המופיע באתר, לרבות זמינות ותיאור הנכס.
+              האתר עצמו אינו מציג מחירים. המחיר המחייב מוצג במערכת ההזמנות לאחר בחירת התאריכים, לפני אישור ההזמנה.
             </p>
           </section>
 
@@ -58,7 +59,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold mb-3">6. קישורים חיצוניים</h2>
             <p>
-              האתר מכיל קישורים לשירותים חיצוניים (WhatsApp, Google Maps, Waze). אין לנו שליטה על תוכן שירותים אלו
+              האתר מכיל קישורים לשירותים חיצוניים (מערכת ההזמנות MiniHotel, WhatsApp, Google Maps, Waze). אין לנו שליטה על תוכן שירותים אלו
               ואיננו אחראים למדיניותם.
             </p>
           </section>

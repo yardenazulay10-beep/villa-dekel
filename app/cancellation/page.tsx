@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "מדיניות ביטול | נוף הדקל",
   robots: { index: false },
+  alternates: { canonical: "https://www.nofhadekel.com/cancellation" },
 };
 
 export default function CancellationPage() {

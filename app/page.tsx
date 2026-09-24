@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { FAQ } from "@/app/faq";
 
 declare global { interface Window { gtag?: (...args: unknown[]) => void; } }
 
@@ -19,7 +20,7 @@ const aboutSrc = img(56); // open-plan living/dining with pool + sea through ful
 // Alt text per image: real descriptions, not "תמונה 3".
 // Screen readers and Google Images both read these, and villa searches are image-led.
 const CAPTIONS: Record<string, string> = {
-  "/media/img64.jpg": "בריכה פרטית מחוממת עם מיטות שיזוף ומבט אל הווילה",
+  "/media/img64.jpg": "בריכה פרטית מחוממת עם מיטות שיזוף ומבט אל הוילה",
   "/media/img48.jpg": "בריכה מחוממת ומרפסת שיזוף עם פנורמה לים סוף",
   "/media/img42.jpg": "גינה מטופחת, בריכה פרטית ונוף לים סוף",
   "/media/img56.jpg": "מרחב מחיה פתוח עם פינת אוכל ונוף לים",
@@ -110,6 +111,7 @@ function BookingWidget() {
   const todayISO = toISO(new Date());
   const [blocked, setBlocked] = useState<Set<string>>(new Set());
   const [calLoading, setCalLoading] = useState(true);
+  const [calError, setCalError] = useState(false);
   const [viewDate, setViewDate] = useState(() => { const d = new Date(); d.setDate(1); return d; });
   const [checkIn, setCheckIn] = useState<string | null>(null);
   const [checkOut, setCheckOut] = useState<string | null>(null);
@@ -119,21 +121,41 @@ function BookingWidget() {
   useEffect(() => {
     const ctrl = new AbortController();
     fetch("/api/blocked-dates", { signal: ctrl.signal })
-      .then(r => r.json()).then(d => setBlocked(new Set(d.blockedDates))).catch(() => {})
+      .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(d => { setBlocked(new Set<string>(d.blockedDates)); setCheckIn(null); setCheckOut(null); })
+      .catch(err => { if (err?.name !== "AbortError") setCalError(true); })
       .finally(() => setCalLoading(false));
     return () => ctrl.abort();
   }, []);
 
+  // A blocked day means that night is taken. Checking out on it is still valid (the
+  // previous guest leaves that morning), so it is refused only as a check-in. A stay
+  // may not cross a blocked night: tapping a free day past one starts a new selection
+  // there instead of being swallowed.
+  const rangeIsFree = (from: string, to: string) => {
+    const d = parseDate(from);
+    for (;;) {
+      d.setDate(d.getDate() + 1);
+      const night = toISO(d);
+      if (night >= to) return true;
+      if (blocked.has(night)) return false;
+    }
+  };
+  const canBeCheckOut = (iso: string) => checkIn !== null && checkOut === null && iso > checkIn && rangeIsFree(checkIn, iso);
+
   const handleDay = (iso: string) => {
-    if (iso < todayISO || blocked.has(iso)) return;
-    if (!checkIn || checkOut) { setCheckIn(iso); setCheckOut(null); }
-    else { if (iso <= checkIn) { setCheckIn(iso); setCheckOut(null); } else { setCheckOut(iso); } }
+    if (iso < todayISO) return;
+    if (checkIn && !checkOut && iso > checkIn && rangeIsFree(checkIn, iso)) { setCheckOut(iso); return; }
+    if (blocked.has(iso)) return;
+    setCheckIn(iso); setCheckOut(null);
   };
 
   const nights = checkIn && checkOut
     ? Math.round((parseDate(checkOut).getTime() - parseDate(checkIn).getTime()) / 86400000)
     : null;
 
+  // The CTA is a real link so in-app browsers (WhatsApp shares are most of the
+  // traffic) and popup blockers cannot swallow it; this only records the event.
   const book = () => {
     if (!checkIn || !checkOut) return;
     window.gtag?.("event", "booking_initiated", {
@@ -143,7 +165,6 @@ function BookingWidget() {
       nights,
       guests,
     });
-    window.open(minihotelUrl(checkIn, checkOut), "_blank", "noopener,noreferrer");
   };
 
   const renderMonth = (monthStart: Date) => {
@@ -158,7 +179,7 @@ function BookingWidget() {
       <div>
         <div className="text-center font-semibold text-[#0F1729] mb-3 text-base">{HE_MONTHS[month]} {year}</div>
         <div className="grid grid-cols-7 gap-0.5 mb-1">
-          {HE_DAYS.map(d => <div key={d} className="text-center text-xs text-gray-400 py-1">{d}</div>)}
+          {HE_DAYS.map(d => <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>)}
         </div>
         <div className="grid grid-cols-7 gap-0.5">
           {cells.map((iso, i) => {
@@ -168,20 +189,25 @@ function BookingWidget() {
             const isStart = iso === checkIn;
             const isEnd = iso === checkOut;
             const inRange = !!(checkIn && hoverEnd && iso > checkIn && iso < hoverEnd);
-            const disabled = isPast || isBlocked;
+            const checkOutOnly = isBlocked && (isEnd || canBeCheckOut(iso));
+            const disabled = isPast || (isBlocked && !checkOutOnly);
+            const dayNum = parseInt(iso.split("-")[2]);
+            const state = isStart ? ", תאריך הגעה" : isEnd ? ", תאריך עזיבה" : disabled && isBlocked ? ", תפוס" : "";
             return (
               <button key={iso} type="button" onClick={() => handleDay(iso)}
-                onMouseEnter={() => !disabled && setHover(iso)} onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => !disabled && (!checkIn || checkOut || iso <= checkIn || rangeIsFree(checkIn, iso)) && setHover(iso)}
+                onMouseLeave={() => setHover(null)}
                 disabled={disabled}
+                aria-label={`${dayNum} ב${HE_MONTHS[month]} ${year}${state}`}
                 className={[
                   "h-11 w-full text-sm transition-all rounded-lg",
                   isPast ? "text-gray-300 cursor-not-allowed" : "",
-                  isBlocked ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : "",
+                  isBlocked && !checkOutOnly ? "bg-red-50 text-red-300 line-through cursor-not-allowed" : "",
                   isStart || isEnd ? "bg-[#0F1729] text-white font-bold" : "",
                   inRange ? "bg-[#F0E8D4] rounded-none" : "",
                   !disabled && !isStart && !isEnd && !inRange ? "hover:bg-[#F5EDD8] cursor-pointer" : "",
                 ].filter(Boolean).join(" ")}
-              >{parseInt(iso.split("-")[2])}</button>
+              >{dayNum}</button>
             );
           })}
         </div>
@@ -198,37 +224,38 @@ function BookingWidget() {
       <div className="grid grid-cols-2 gap-3">
         {([["הגעה", checkIn], ["עזיבה", checkOut]] as [string, string | null][]).map(([label, val]) => (
           <div key={label} className="border border-[#E0D5C5] rounded-xl px-4 py-3 bg-white">
-            <div className="text-xs text-gray-400 mb-0.5">{label}</div>
+            <div className="text-xs text-gray-500 mb-0.5">{label}</div>
             <div className="text-base font-semibold text-[#0F1729]">
-              {val ? formatHe(val) : <span className="text-gray-300 font-normal text-sm">בחרו תאריך</span>}
+              {val ? formatHe(val) : <span className="text-gray-500 font-normal text-sm">בחרו תאריך</span>}
             </div>
           </div>
         ))}
       </div>
       <div className="border border-[#E0D5C5] rounded-2xl p-4 bg-white">
-        {calLoading ? (
-          <div className="text-center py-8 text-sm text-gray-400">טוען זמינות...</div>
-        ) : (
-          <>
+        <div aria-busy={calLoading} inert={calLoading} className={calLoading ? "opacity-50" : ""}>
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
-              <button type="button" onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
+              <button type="button" onClick={prevMonth} aria-label="חודש קודם" className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">‹</button>
+              <button type="button" onClick={nextMonth} aria-label="חודש הבא" className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-xl leading-none">›</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {renderMonth(viewDate)}
               {renderMonth(nextMonthDate)}
             </div>
-            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#0F1729] inline-block" /> נבחר</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-200 inline-block" /> עבר</span>
             </div>
-          </>
-        )}
+        </div>
+        <div aria-live="polite" className="text-center text-xs">
+          {calLoading && <p className="mt-3 text-gray-500">טוען זמינות...</p>}
+          {calError && !calLoading && <p className="mt-3 text-gray-600">לא הצלחנו לטעון את הזמינות העדכנית. התאריכים יאומתו בשלב הבא.</p>}
+          {!calLoading && !calError && <span className="sr-only">הזמינות נטענה</span>}
+        </div>
       </div>
       <div>
         <label htmlFor="guests-sel" className="block text-sm text-gray-600 mb-2 font-medium">מספר אורחים</label>
         <select id="guests-sel" value={guests} onChange={e => setGuests(e.target.value)}
-          className="w-full bg-white border border-[#E0D5C5] rounded-xl px-4 py-3.5 text-base text-[#0F1729] focus:outline-none focus:border-[#C9A84C] transition-colors">
+          className="w-full bg-white border border-[#E0D5C5] rounded-xl px-4 py-3.5 text-base text-[#0F1729] focus:outline-none focus:ring-2 focus:ring-[#0F1729] focus:border-[#0F1729] transition-colors">
           {[2,3,4,5,6,7,8,9,10,11,12].map(n => <option key={n} value={n}>{n} אורחים</option>)}
         </select>
       </div>
@@ -240,11 +267,11 @@ function BookingWidget() {
             <span className="font-semibold text-[#0F1729]">{formatHe(checkOut)}</span>
             {" · "}{nights} לילות · {guests} אורחים
           </div>
-          <button type="button" onClick={book}
-            className="w-full bg-[#C9A84C] hover:bg-[#D4B45A] text-[#0F1729] font-bold py-4 rounded-xl transition-all text-base shadow-lg">
+          <a href={minihotelUrl(checkIn, checkOut)} target="_blank" rel="noopener noreferrer" onClick={book}
+            className="block w-full text-center bg-[#C9A84C] hover:bg-[#D4B45A] text-[#0F1729] font-bold py-4 rounded-xl transition-all text-base shadow-lg">
             המשך להזמנה ←
-          </button>
-          <p className="text-center text-xs text-gray-400">המחיר הסופי יוצג בשלב הבא · אילת — אזור פטור ממע&quot;מ</p>
+          </a>
+          <p className="text-center text-xs text-gray-500">המחיר הסופי יוצג בשלב הבא · אילת — אזור פטור ממע&quot;מ</p>
         </div>
       ) : (
         <button type="button" disabled
@@ -256,6 +283,19 @@ function BookingWidget() {
   );
 }
 
+
+function A11yToggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-all border ${active ? "bg-[#0F1729] text-white border-[#0F1729]" : "bg-white text-[#0F1729] border-gray-200 hover:bg-gray-50"}`}
+    >
+      {label}
+    </button>
+  );
+}
 
 function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
@@ -292,14 +332,6 @@ function AccessibilityWidget() {
     document.documentElement.style.fontSize = "";
   };
 
-  const Btn = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
-    <button
-      onClick={onClick}
-      className={`w-full text-right px-3 py-2 rounded-lg text-sm transition-all border ${active ? "bg-[#0F1729] text-white border-[#0F1729]" : "bg-white text-[#0F1729] border-gray-200 hover:bg-gray-50"}`}
-    >
-      {label}
-    </button>
-  );
 
   return (
     <>
@@ -314,7 +346,8 @@ function AccessibilityWidget() {
       {/* Toggle button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="פתח תפריט נגישות"
+        aria-label="תפריט נגישות"
+        aria-expanded={open}
         className="fixed bottom-24 left-6 z-50 w-12 h-12 rounded-full bg-[#0F1729] text-white shadow-xl flex items-center justify-center hover:bg-[#1a2540] transition-all"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -327,7 +360,7 @@ function AccessibilityWidget() {
         <div className="fixed bottom-40 left-6 z-50 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 space-y-2" dir="rtl">
           <div className="flex items-center justify-between mb-1">
             <span className="font-semibold text-[#0F1729] text-sm">נגישות</span>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="סגור תפריט נגישות" className="text-gray-500 hover:text-gray-700 text-xl leading-none">×</button>
           </div>
 
           {/* Font size */}
@@ -336,12 +369,12 @@ function AccessibilityWidget() {
             <button onClick={() => setFontSize((f) => Math.min(2, f + 1))} className="flex-1 border border-gray-200 rounded-lg py-1.5 text-base font-bold hover:bg-gray-50">A+</button>
           </div>
 
-          <Btn label="ניגודיות גבוהה" active={highContrast} onClick={() => setHighContrast((v) => !v)} />
-          <Btn label="גווני אפור" active={grayscale} onClick={() => setGrayscale((v) => !v)} />
-          <Btn label="פונט דיסלקציה" active={dyslexia} onClick={() => setDyslexia((v) => !v)} />
-          <Btn label="ניווט מקלדת" active={keyboardNav} onClick={() => setKeyboardNav((v) => !v)} />
+          <A11yToggle label="ניגודיות גבוהה" active={highContrast} onClick={() => setHighContrast((v) => !v)} />
+          <A11yToggle label="גווני אפור" active={grayscale} onClick={() => setGrayscale((v) => !v)} />
+          <A11yToggle label="פונט דיסלקציה" active={dyslexia} onClick={() => setDyslexia((v) => !v)} />
+          <A11yToggle label="ניווט מקלדת" active={keyboardNav} onClick={() => setKeyboardNav((v) => !v)} />
 
-          <button onClick={reset} className="w-full text-center text-xs text-gray-400 hover:text-gray-600 pt-1">
+          <button type="button" onClick={reset} className="w-full text-center text-xs text-gray-500 hover:text-gray-700 pt-1">
             איפוס הגדרות
           </button>
           <a href="/accessibility" className="block text-center text-xs text-[#C9A84C] hover:underline">
@@ -357,6 +390,20 @@ export default function Home() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [tourPlaying, setTourPlaying] = useState(false);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const lastFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    lastFocusRef.current = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    lightboxRef.current?.focus();
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      lastFocusRef.current?.focus();
+    };
+  }, [lightboxOpen]);
 
   const openLightbox = (src: string) => {
     const idx = cleanPhotos.indexOf(src);
@@ -374,6 +421,8 @@ export default function Home() {
           alt="נוף הדקל — בריכה ופנורמה לים סוף"
           fill
           priority
+          fetchPriority="high"
+          sizes="100vw"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -443,7 +492,7 @@ export default function Home() {
             </p>
           </div>
           <div className="order-1 md:order-2 relative h-[480px] md:h-[580px] rounded-2xl overflow-hidden">
-            <Image src={aboutSrc} alt="סלון ופינת אוכל עם נוף לים סוף" fill className="object-cover" />
+            <Image src={aboutSrc} alt="סלון ופינת אוכל עם נוף לים סוף" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
           </div>
         </div>
       </section>
@@ -471,26 +520,26 @@ export default function Home() {
               onClick={() => openLightbox(galleryPreview[0])}
               className="col-span-2 row-span-2 relative h-72 md:h-[480px] rounded-2xl overflow-hidden group"
             >
-              <Image src={galleryPreview[0]} alt={capt(galleryPreview[0])} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image src={galleryPreview[0]} alt={capt(galleryPreview[0])} fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
             </button>
-            {galleryPreview.slice(1, 5).map((src, i) => (
+            {galleryPreview.slice(1, 5).map((src) => (
               <button
                 key={src}
                 onClick={() => openLightbox(src)}
                 className="relative h-36 md:h-[232px] rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill sizes="(max-width: 768px) 50vw, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </button>
             ))}
-            {galleryPreview.slice(5, 9).map((src, i) => (
+            {galleryPreview.slice(5, 9).map((src) => (
               <button
                 key={src}
                 onClick={() => openLightbox(src)}
                 className="relative h-44 md:h-56 rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill sizes="(max-width: 768px) 50vw, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all" />
               </button>
             ))}
@@ -500,7 +549,7 @@ export default function Home() {
                 onClick={() => openLightbox(src)}
                 className="relative h-44 md:h-56 rounded-2xl overflow-hidden group"
               >
-                <Image src={src} alt={capt(src)} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                <Image src={src} alt={capt(src)} fill sizes="(max-width: 768px) 50vw, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 {i === 2 && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <span className="text-white text-sm font-light">כל התמונות ({cleanPhotos.length})</span>
@@ -536,12 +585,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setTourPlaying(true)}
-                  aria-label="נגן את סרטון הסיור בווילה"
+                  aria-label="נגן את סרטון הסיור בוילה"
                   className="group absolute inset-0 h-full w-full"
                 >
                   <Image
                     src={TOUR_POSTER}
-                    alt="סיור מצולם בווילה נוף הדקל"
+                    alt="סיור מצולם בוילה נוף הדקל"
                     fill
                     sizes="(max-width: 768px) 100vw, 420px"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -555,7 +604,7 @@ export default function Home() {
                     </span>
                   </span>
                   <span className="absolute bottom-6 inset-x-0 text-center text-white/80 text-sm font-light tracking-wide">
-                    29 שניות · לחצו לנגינה
+                    29 שניות · לחצו לצפייה
                   </span>
                 </button>
               )}
@@ -574,12 +623,12 @@ export default function Home() {
                 בדקו זמינות<br />והזמינו ישירות
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
-                בחרו תאריכים וראו מיד את המחיר בזמן אמת.
+                בחרו תאריכים והמשיכו להזמנה. המחיר הסופי מוצג לפני האישור, ללא תוספות.
               </p>
               <div className="space-y-4 text-base text-gray-500">
                 <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-[#C9A84C] flex-shrink-0" />
-                  מחיר בזמן אמת — ללא הפתעות
+                  מחיר סופי ושקוף, ללא הפתעות
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-[#C9A84C] flex-shrink-0" />
@@ -590,29 +639,8 @@ export default function Home() {
                   תיאום אישי עם הצוות
                 </div>
               </div>
-
-              {/* Social proof quote */}
-              <blockquote className="mt-10 border-r-2 border-[#C9A84C] pr-5">
-                <p className="text-gray-500 text-base leading-relaxed italic">
-                  "הוילה עברה את כל הציפיות שלנו. הבריכה, הנוף, השקט — חופשה שלמה."
-                </p>
-                <footer className="mt-3 text-sm text-[#C9A84C] font-medium">משפחת כהן · חנוכה 2024 · ציון 10/10</footer>
-              </blockquote>
             </div>
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E8D5B7]/60">
-
-              {/* Mobile value-prop strip */}
-              <div className="flex md:hidden justify-between text-center text-xs text-gray-500 mb-6 pb-5 border-b border-gray-100">
-                <div><p className="text-lg font-semibold text-[#0F1729]">5</p><p>חדרי שינה</p></div>
-                <div><p className="text-lg font-semibold text-[#0F1729]">12</p><p>אורחים</p></div>
-                <div><p className="text-lg font-semibold text-[#0F1729]">10/10</p><p>Booking.com</p></div>
-              </div>
-
-              {/* Urgency signal */}
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
-                <span className="text-base">🔥</span>
-                <span>הקיץ מתמלא מהר — בדקו זמינות עכשיו</span>
-              </div>
 
               <BookingWidget />
             </div>
@@ -648,11 +676,11 @@ export default function Home() {
             <div>
               <p className="label-gold">מיקום</p>
               <h2 className="font-display text-5xl text-[#0F1729] font-light leading-tight mb-8">
-                לב אילת,<br />שקט ופרטיות
+                דקות מהחוף,<br />שקט ופרטיות
               </h2>
               <p className="text-gray-500 text-lg leading-[1.9] mb-8">
-                ברחוב הרעות 18 — שכונה שקטה, מרחק נסיעה קצרה מהחוף,
-                מסעדות ומרכז העיר.
+                ברחוב הרעות 18, בשכונה שקטה: 8 דקות הליכה לחוף,
+                ונסיעה קצרה לטיילת, למסעדות ולמרכז העיר.
               </p>
               <div className="space-y-4 text-base text-gray-600">
                 {[
@@ -663,7 +691,7 @@ export default function Home() {
                 ].map(([label, val]) => (
                   <div key={label} className="flex items-center gap-4 border-b border-gray-100 pb-4">
                     <span className="font-semibold text-[#0F1729] w-36 flex-shrink-0">{label}</span>
-                    <span className="text-gray-400">{val}</span>
+                    <span className="text-gray-600">{val}</span>
                   </div>
                 ))}
                 {/* Navigation buttons */}
@@ -710,36 +738,7 @@ export default function Home() {
             <h2 className="font-display text-5xl text-[#0F1729] font-light">כל מה שרציתם לדעת</h2>
           </div>
           <div className="space-y-0 divide-y divide-gray-100">
-            {[
-              {
-                q: "כמה אורחים יכולים להתארח בוילה?",
-                a: "הוילה מתאימה עד 12 אורחים רשמית, עם 5 חדרי שינה ו-3 חדרי אמבטיה מלאים. ניתן להוסיף מיטות מתקפלות לצרכים מיוחדים.",
-              },
-              {
-                q: "האם הבריכה מחוממת כל השנה?",
-                a: "כן. הבריכה הפרטית מחוממת ופתוחה לשימוש בלעדי של האורחים לאורך כל השנה — גם בחורף.",
-              },
-              {
-                q: "כמה רחוקה הוילה מהחוף?",
-                a: "8 דקות הליכה לחוף הים, 10 דקות נסיעה לטיילת אילת, ו-20 דקות נסיעה משדה התעופה.",
-              },
-              {
-                q: "איך מתבצעת ההזמנה?",
-                a: "בוחרים תאריכים בדף זה ולוחצים על 'המשך להזמנה'. המערכת תציג את המחיר הסופי ותאפשר לאשר. ניתן גם לפנות ישירות להרים אילת בוואטסאפ: 054-483-0310.",
-              },
-              {
-                q: "האם המחיר כולל מע\"מ?",
-                a: "אילת היא אזור מס מיוחד הפטור ממע\"מ — המחיר שמוצג הוא המחיר הסופי, ללא תוספות.",
-              },
-              {
-                q: "מה מדיניות הביטול?",
-                a: "ביטול מעל 5 ימים לפני ההגעה — ללא חיוב. ביטול בין 24 שעות ל-5 ימים לפני — חיוב של 50%. ביטול פחות מ-24 שעות או אי הגעה — חיוב מלא.",
-              },
-              {
-                q: "האם מותר להביא חיות מחמד?",
-                a: "הוילה אינה מתאימה לחיות מחמד.",
-              },
-            ].map(({ q, a }) => (
+            {FAQ.map(({ q, a }) => (
               <details key={q} className="group py-5 cursor-pointer list-none">
                 <summary className="flex items-center justify-between gap-4 text-base font-medium text-[#0F1729] marker:hidden [&::-webkit-details-marker]:hidden">
                   {q}
@@ -783,7 +782,7 @@ export default function Home() {
       {/* ── FOOTER ───────────────────────────────────────── */}
       <footer className="bg-[#080F1C] text-white/25 text-xs py-10 text-center px-6 space-y-2 leading-relaxed">
         <p className="text-white/40 font-medium">נוף הדקל — וילה פרטית באילת</p>
-        <p>מנוהל על ידי: הרים אילת · המגינים 21, אילת · טל: 054-483-0310</p>
+        <p>מנוהל על ידי: הרים אילת · אלמוגים 21, אילת · טל: 054-483-0310</p>
         <p>
           <a href="/privacy" className="underline hover:text-white/50 transition-colors">מדיניות פרטיות</a>
           {" · "}
@@ -813,6 +812,7 @@ export default function Home() {
 {/* ── LIGHTBOX ─────────────────────────────────────── */}
       {lightboxOpen && (
         <div
+          ref={lightboxRef}
           role="dialog"
           aria-modal="true"
           aria-label={`גלריה — תמונה ${activeIdx + 1} מתוך ${cleanPhotos.length}`}
